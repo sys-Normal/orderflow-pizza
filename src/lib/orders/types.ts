@@ -1,4 +1,4 @@
-import type { PizzaSize } from "@/lib/menu/data";
+import type { PizzaSize } from "@/lib/menu/types";
 
 export type OrderItem = {
   pizzaId: string;

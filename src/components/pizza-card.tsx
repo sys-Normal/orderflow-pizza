@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Pizza, PizzaSize } from "@/lib/menu/data";
+import type { Pizza, PizzaSize } from "@/lib/menu/types";
 import { useCart } from "@/lib/cart/cart-context";
 
 const SIZES: PizzaSize[] = ["S", "M", "L"];
