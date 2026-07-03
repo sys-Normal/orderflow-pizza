@@ -1,15 +1,13 @@
-"use client";
-
 import Link from "next/link";
-import { useOrders } from "@/lib/orders/storage";
+import { getOrders } from "@/lib/orders/queries";
 import { ORDER_STATUS_LABELS } from "@/lib/orders/types";
 
 function formatPrice(amount: number) {
   return `${amount.toLocaleString("ko-KR")}원`;
 }
 
-export default function AdminOrdersPage() {
-  const orders = useOrders();
+export default async function AdminOrdersPage() {
+  const orders = await getOrders();
 
   return (
     <div className="flex flex-col gap-6">

@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/lib/cart/cart-context";
-import { addOrder } from "@/lib/orders/storage";
+import { createOrder } from "@/lib/orders/actions";
 import { CartSummary } from "@/components/cart-summary";
 
 export default function CheckoutPage() {
@@ -15,9 +15,9 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const order = addOrder({
+    const order = await createOrder({
       items,
       subtotal,
       customer: { name, phone, address, notes: notes || undefined },

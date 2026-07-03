@@ -1,13 +1,14 @@
-"use client";
-
-import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useOrder } from "@/lib/orders/storage";
+import { getOrder } from "@/lib/orders/queries";
 import { CartSummary } from "@/components/cart-summary";
 
-export default function ConfirmationPage() {
-  const params = useParams<{ orderId: string }>();
-  const order = useOrder(params.orderId);
+export default async function ConfirmationPage({
+  params,
+}: {
+  params: Promise<{ orderId: string }>;
+}) {
+  const { orderId } = await params;
+  const order = await getOrder(orderId);
 
   if (!order) {
     return (

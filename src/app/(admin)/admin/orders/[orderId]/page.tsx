@@ -1,16 +1,15 @@
-"use client";
-
-import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useOrder, updateOrderStatus } from "@/lib/orders/storage";
-import { ORDER_STATUS_LABELS, type OrderStatus } from "@/lib/orders/types";
+import { getOrder } from "@/lib/orders/queries";
 import { CartSummary } from "@/components/cart-summary";
+import { OrderStatusButtons } from "@/components/order-status-buttons";
 
-const STATUSES: OrderStatus[] = ["received", "preparing", "ready", "completed"];
-
-export default function AdminOrderDetailPage() {
-  const params = useParams<{ orderId: string }>();
-  const order = useOrder(params.orderId);
+export default async function AdminOrderDetailPage({
+  params,
+}: {
+  params: Promise<{ orderId: string }>;
+}) {
+  const { orderId } = await params;
+  const order = await getOrder(orderId);
 
   if (!order) {
     return (
@@ -53,22 +52,7 @@ export default function AdminOrderDetailPage() {
 
       <div>
         <h2 className="mb-2 font-medium">상태</h2>
-        <div className="flex gap-2">
-          {STATUSES.map((status) => (
-            <button
-              key={status}
-              type="button"
-              onClick={() => updateOrderStatus(order.id, status)}
-              className={`rounded-full border px-3 py-1 text-sm ${
-                order.status === status
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-black/[.08] dark:border-white/[.145]"
-              }`}
-            >
-              {ORDER_STATUS_LABELS[status]}
-            </button>
-          ))}
-        </div>
+        <OrderStatusButtons orderId={order.id} currentStatus={order.status} />
       </div>
     </div>
   );
