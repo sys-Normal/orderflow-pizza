@@ -15,8 +15,13 @@
 
 | 역할 | 계정 필요 | 접근 화면 | 할 수 있는 것 |
 | --- | --- | --- | --- |
-| 구매자 (buyer) | 불필요 (비회원) | `/`, `/menu`, `/cart`, `/checkout`, `/confirmation/[orderId]` | 메뉴 조회, 장바구니, 주문 생성, 본인이 방금 생성한 주문 확인 |
-| 판매자 (seller) | 필요 | `/admin/login`, `/admin/orders`, `/admin/orders/[orderId]` | **본인이 소유한 매장의 주문만** 조회 및 상태 변경 (`getOrdersForSession`/`getOrderForSession`이 `Store.ownerId` 기준으로 필터링, `updateOrderStatus`도 소유권 재검증) |
-| 플랫폼 관리자 (platform_admin) | 필요 | 판매자 화면 전체 + `/admin/stores` | **모든 매장**의 모든 주문 조회/상태 변경, 매장 목록 조회 및 상태 변경(`pending`/`approved`/`suspended`/`rejected`) |
+| 구매자 | 불필요 | 메뉴 · 장바구니 · 주문/확인 | 메뉴 조회, 주문 생성, 본인 주문 확인 |
+| 판매자 (seller) | 필요 | 관리자 주문 화면 | 본인 매장 주문만 조회·상태 변경 |
+| 플랫폼 관리자 (platform_admin) | 필요 | 관리자 주문 화면 + 매장 관리 | 전체 매장 주문 조회·상태 변경, 매장 승인/정지 |
+
+- 구매자 화면 경로: `/`, `/menu`, `/cart`, `/checkout`, `/confirmation/[orderId]`
+- 관리자 주문 화면 경로: `/admin/login`, `/admin/orders`, `/admin/orders/[orderId]`
+- 매장 관리 경로(`platform_admin` 전용): `/admin/stores`
+- 판매자 스코핑은 `getOrdersForSession`/`getOrderForSession`이 `Store.ownerId` 기준으로 필터링하며, `updateOrderStatus`도 소유권을 재검증합니다. 매장 상태(`pending`/`approved`/`suspended`/`rejected`) 변경은 `updateStoreStatus`가 담당합니다.
 
 현재는 매장이 하나뿐이라 seller/platform_admin의 주문 목록이 실제로는 같아 보이지만, 매장이 여러 개로 늘어나면 seller는 자기 매장 주문만, platform_admin은 전체를 보게 되는 차이가 그때부터 드러납니다.
