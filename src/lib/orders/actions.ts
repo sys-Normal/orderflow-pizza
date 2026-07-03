@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { getSessionUser } from "@/lib/auth/current-user";
 import type { Order, OrderCustomer, OrderItem, OrderStatus } from "@/lib/orders/types";
 
 export async function createOrder(input: {
@@ -47,6 +48,13 @@ export async function updateOrderStatus(
   id: string,
   status: OrderStatus
 ): Promise<void> {
+  // Route matcher already guards /admin/*, but Server Actions are invoked
+  // directly and can drift out of matcher coverage — check here too.
+  const session = await getSessionUser();
+  if (!session) {
+    throw new Error("로그인이 필요합니다.");
+  }
+
   await prisma.order.update({ where: { id }, data: { status } });
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${id}`);

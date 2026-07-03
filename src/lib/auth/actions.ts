@@ -2,11 +2,13 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/db";
+import { verifyPassword } from "@/lib/auth/password";
 import {
-  ADMIN_SESSION_COOKIE,
-  ADMIN_SESSION_VALUE,
-  verifyCredentials,
-} from "@/lib/auth/mock-admin";
+  createSessionValue,
+  SESSION_COOKIE,
+  SESSION_MAX_AGE_SECONDS,
+} from "@/lib/auth/session";
 
 export type LoginState = { error: string } | undefined;
 
@@ -14,31 +16,34 @@ export async function loginAction(
   _prevState: LoginState,
   formData: FormData
 ): Promise<LoginState> {
-  const username = String(formData.get("username") ?? "");
+  const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
 
-  if (!verifyCredentials(username, password)) {
-    return { error: "아이디 또는 비밀번호가 올바르지 않습니다." };
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user || !verifyPassword(password, user.passwordHash)) {
+    return { error: "이메일 또는 비밀번호가 올바르지 않습니다." };
+  }
+  if (user.role !== "seller" && user.role !== "platform_admin") {
+    return { error: "관리자 권한이 없는 계정입니다." };
   }
 
-  // Mock session cookie for portfolio purposes — a real deployment would
-  // replace this with a signed/encrypted session (e.g. a `jose` JWT) issued
-  // and validated by a real backend, not a hardcoded flag value. httpOnly
-  // here only blocks casual client-side JS access; it is not a real
-  // security boundary since the value itself carries no cryptographic proof.
   const cookieStore = await cookies();
-  cookieStore.set(ADMIN_SESSION_COOKIE, ADMIN_SESSION_VALUE, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 8,
-  });
+  cookieStore.set(
+    SESSION_COOKIE,
+    createSessionValue({ userId: user.id, role: user.role }),
+    {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: SESSION_MAX_AGE_SECONDS,
+    }
+  );
 
   redirect("/admin/orders");
 }
 
 export async function logoutAction() {
   const cookieStore = await cookies();
-  cookieStore.delete(ADMIN_SESSION_COOKIE);
+  cookieStore.delete(SESSION_COOKIE);
   redirect("/admin/login");
 }

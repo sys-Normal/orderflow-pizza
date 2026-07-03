@@ -1,6 +1,12 @@
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import type { Pizza } from "../src/lib/menu/types";
+import { hashPassword } from "../src/lib/auth/password";
+
+const SEED_ACCOUNTS = [
+  { email: "seller@orderflow.pizza", password: "seller1234!", role: "seller" as const },
+  { email: "admin@orderflow.pizza", password: "admin1234!", role: "platform_admin" as const },
+];
 
 const adapter = new PrismaBetterSqlite3({
   url: process.env.DATABASE_URL ?? "file:./dev.db",
@@ -47,15 +53,19 @@ const PIZZAS: Pizza[] = [
 ];
 
 async function main() {
-  const owner = await prisma.user.upsert({
-    where: { email: "seller@orderflow.pizza" },
-    update: {},
-    create: {
-      email: "seller@orderflow.pizza",
-      passwordHash: "seed-only-not-a-real-hash",
-      role: "seller",
-    },
-  });
+  const [owner] = await Promise.all(
+    SEED_ACCOUNTS.map((account) =>
+      prisma.user.upsert({
+        where: { email: account.email },
+        update: { passwordHash: hashPassword(account.password) },
+        create: {
+          email: account.email,
+          passwordHash: hashPassword(account.password),
+          role: account.role,
+        },
+      })
+    )
+  );
 
   const store = await prisma.store.upsert({
     where: { id: "orderflow-main" },
@@ -91,6 +101,10 @@ async function main() {
   }
 
   console.log(`Seeded store "${store.name}" with ${PIZZAS.length} menu items.`);
+  console.log("Seeded accounts:");
+  for (const account of SEED_ACCOUNTS) {
+    console.log(`  ${account.role}: ${account.email} / ${account.password}`);
+  }
 }
 
 main()

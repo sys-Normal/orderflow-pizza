@@ -9,14 +9,15 @@ export function LoginForm() {
   return (
     <form action={action} className="flex w-full max-w-sm flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <label htmlFor="username" className="text-sm font-medium">
-          아이디
+        <label htmlFor="email" className="text-sm font-medium">
+          이메일
         </label>
         <input
-          id="username"
-          name="username"
+          id="email"
+          name="email"
+          type="email"
           required
-          autoComplete="username"
+          autoComplete="email"
           className="rounded border border-black/[.08] bg-transparent px-3 py-2 dark:border-white/[.145]"
         />
       </div>

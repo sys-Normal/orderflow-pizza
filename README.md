@@ -2,13 +2,11 @@
 
 사용자 주문 흐름은 비회원 주문을 가정하여 별도 인증 없이 접근 가능하도록 구성했습니다.
 
-관리자 주문 관리 화면은 운영자 전용 영역으로 분리하고, 포트폴리오 환경에서는 별도 백엔드 없이 Mock Admin Session을 cookie에 저장하는 방식으로 접근 제어를 구현했습니다.
-
-실제 서비스에서는 서버에서 발급한 HttpOnly Cookie 또는 Access Token 기반 인증으로 확장할 수 있도록 관리자 라우트를 분리했습니다.
+관리자 주문 관리 화면은 운영자 전용 영역으로 분리하고, `User` 테이블(Prisma) 기반 다중 계정 로그인으로 접근을 제어합니다. 역할(`role`)은 `buyer` / `seller` / `platform_admin`으로 구분되며, 관리자 화면은 `seller`·`platform_admin` 계정만 로그인할 수 있습니다.
 
 **구현 상세**
 
-- 로그인: `/admin/login` — mock 계정(`admin` / `admin1234`)을 `src/lib/auth/mock-admin.ts`에서 검증
-- 세션: 로그인 성공 시 `src/lib/auth/actions.ts`의 Server Action이 `admin_session` 쿠키(HttpOnly)를 발급. 값 자체는 암호화되지 않은 단순 플래그이며, 실제 서비스 전환 시 서명/암호화된 세션(JWT 등)으로 교체가 필요합니다.
-- 라우트 보호: `src/proxy.ts`가 `/admin/*` 요청을 가로채 쿠키를 확인하고, 없으면 `/admin/login`으로 리다이렉트합니다. (`/admin/login` 자체는 예외 처리)
-- 주문 데이터: 별도 DB 없이 브라우저 `localStorage`에 저장되며, 같은 브라우저 내에서 사용자 주문 → 관리자 화면 조회가 가능합니다.
+- 로그인: `/admin/login` — 이메일/비밀번호를 `User` 테이블과 대조. 비밀번호는 평문 저장 없이 `src/lib/auth/password.ts`에서 `scrypt`로 해싱/검증합니다.
+- 세션: 로그인 성공 시 `src/lib/auth/actions.ts`의 Server Action이 `session` 쿠키(HttpOnly)를 발급합니다. 값은 `userId.role.만료시각.서명` 형태로 서버 비밀키(`SESSION_SECRET`)로 HMAC 서명되어 위조/변조를 막습니다 (`src/lib/auth/session.ts`). 실제 서비스에서는 세션 폐기(로그아웃 전 목록 무효화)까지 지원하는 세션 저장소나 JWT 라이브러리로 확장할 수 있습니다.
+- 라우트 보호: `src/proxy.ts`가 `/admin/*` 요청을 가로채 세션 서명을 검증하고, 없거나 위조되었으면 `/admin/login`으로 리다이렉트합니다. Server Action은 라우트 매처와 별개로 직접 호출될 수 있어, 상태 변경 액션(`updateOrderStatus`) 내부에서도 세션을 한 번 더 검사합니다.
+- 주문/메뉴 데이터: Prisma + SQLite로 저장됩니다 (`prisma/schema.prisma`). 시드 스크립트(`prisma/seed.ts`)가 초기 매장·메뉴·계정 데이터를 채웁니다.
