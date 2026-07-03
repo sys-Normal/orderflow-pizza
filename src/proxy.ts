@@ -9,9 +9,14 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const session = request.cookies.get(SESSION_COOKIE)?.value;
-  if (!session || !verifySessionValue(session)) {
+  const sessionCookie = request.cookies.get(SESSION_COOKIE)?.value;
+  const session = sessionCookie ? verifySessionValue(sessionCookie) : null;
+  if (!session) {
     return NextResponse.redirect(new URL("/admin/login", request.url));
+  }
+
+  if (pathname.startsWith("/admin/stores") && session.role !== "platform_admin") {
+    return NextResponse.redirect(new URL("/admin/orders", request.url));
   }
 
   return NextResponse.next();

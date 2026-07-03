@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { getOrder } from "@/lib/orders/queries";
+import { redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/auth/current-user";
+import { getOrderForSession } from "@/lib/orders/queries";
 import { CartSummary } from "@/components/cart-summary";
 import { OrderStatusButtons } from "@/components/order-status-buttons";
 
@@ -9,7 +11,9 @@ export default async function AdminOrderDetailPage({
   params: Promise<{ orderId: string }>;
 }) {
   const { orderId } = await params;
-  const order = await getOrder(orderId);
+  const session = await getSessionUser();
+  if (!session) redirect("/admin/login");
+  const order = await getOrderForSession(orderId, session);
 
   if (!order) {
     return (

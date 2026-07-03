@@ -8,5 +8,15 @@
 
 - 로그인: `/admin/login` — 이메일/비밀번호를 `User` 테이블과 대조. 비밀번호는 평문 저장 없이 `src/lib/auth/password.ts`에서 `scrypt`로 해싱/검증합니다.
 - 세션: 로그인 성공 시 `src/lib/auth/actions.ts`의 Server Action이 `session` 쿠키(HttpOnly)를 발급합니다. 값은 `userId.role.만료시각.서명` 형태로 서버 비밀키(`SESSION_SECRET`)로 HMAC 서명되어 위조/변조를 막습니다 (`src/lib/auth/session.ts`). 실제 서비스에서는 세션 폐기(로그아웃 전 목록 무효화)까지 지원하는 세션 저장소나 JWT 라이브러리로 확장할 수 있습니다.
-- 라우트 보호: `src/proxy.ts`가 `/admin/*` 요청을 가로채 세션 서명을 검증하고, 없거나 위조되었으면 `/admin/login`으로 리다이렉트합니다. Server Action은 라우트 매처와 별개로 직접 호출될 수 있어, 상태 변경 액션(`updateOrderStatus`) 내부에서도 세션을 한 번 더 검사합니다.
+- 라우트 보호: `src/proxy.ts`가 `/admin/*` 요청을 가로채 세션 서명을 검증하고, 없거나 위조되었으면 `/admin/login`으로 리다이렉트합니다. `/admin/stores`는 `platform_admin`이 아니면 `/admin/orders`로 다시 리다이렉트합니다. Server Action은 라우트 매처와 별개로 직접 호출될 수 있어, 상태 변경 액션(`updateOrderStatus`, `updateStoreStatus`) 내부에서도 세션을 한 번 더 검사합니다.
 - 주문/메뉴 데이터: Prisma + SQLite로 저장됩니다 (`prisma/schema.prisma`). 시드 스크립트(`prisma/seed.ts`)가 초기 매장·메뉴·계정 데이터를 채웁니다.
+
+**역할별 권한**
+
+| 역할 | 계정 필요 | 접근 화면 | 할 수 있는 것 |
+| --- | --- | --- | --- |
+| 구매자 (buyer) | 불필요 (비회원) | `/`, `/menu`, `/cart`, `/checkout`, `/confirmation/[orderId]` | 메뉴 조회, 장바구니, 주문 생성, 본인이 방금 생성한 주문 확인 |
+| 판매자 (seller) | 필요 | `/admin/login`, `/admin/orders`, `/admin/orders/[orderId]` | **본인이 소유한 매장의 주문만** 조회 및 상태 변경 (`getOrdersForSession`/`getOrderForSession`이 `Store.ownerId` 기준으로 필터링, `updateOrderStatus`도 소유권 재검증) |
+| 플랫폼 관리자 (platform_admin) | 필요 | 판매자 화면 전체 + `/admin/stores` | **모든 매장**의 모든 주문 조회/상태 변경, 매장 목록 조회 및 상태 변경(`pending`/`approved`/`suspended`/`rejected`) |
+
+현재는 매장이 하나뿐이라 seller/platform_admin의 주문 목록이 실제로는 같아 보이지만, 매장이 여러 개로 늘어나면 seller는 자기 매장 주문만, platform_admin은 전체를 보게 되는 차이가 그때부터 드러납니다.

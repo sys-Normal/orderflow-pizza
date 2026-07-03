@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { getOrders } from "@/lib/orders/queries";
+import { redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/auth/current-user";
+import { getOrdersForSession } from "@/lib/orders/queries";
 import { ORDER_STATUS_LABELS } from "@/lib/orders/types";
 
 function formatPrice(amount: number) {
@@ -7,7 +9,9 @@ function formatPrice(amount: number) {
 }
 
 export default async function AdminOrdersPage() {
-  const orders = await getOrders();
+  const session = await getSessionUser();
+  if (!session) redirect("/admin/login");
+  const orders = await getOrdersForSession(session);
 
   return (
     <div className="flex flex-col gap-6">

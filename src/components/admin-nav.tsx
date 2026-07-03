@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/lib/auth/actions";
+import type { SessionRole } from "@/lib/auth/session";
 
-export function AdminNav() {
+export function AdminNav({ role }: { role?: SessionRole }) {
   const pathname = usePathname();
   if (pathname === "/admin/login") return null;
 
@@ -16,6 +17,9 @@ export function AdminNav() {
         </Link>
         <nav className="flex items-center gap-4 text-sm font-medium">
           <Link href="/admin/orders">주문 목록</Link>
+          {role === "platform_admin" && (
+            <Link href="/admin/stores">매장 관리</Link>
+          )}
           <form action={logoutAction}>
             <button type="submit">로그아웃</button>
           </form>
