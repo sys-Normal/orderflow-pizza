@@ -1,0 +1,114 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  buyer
+  seller
+  platform_admin
+}
+
+enum StoreStatus {
+  pending
+  approved
+  suspended
+  rejected
+}
+
+enum OrderStatus {
+  received
+  preparing
+  ready
+  completed
+}
+
+enum PizzaSize {
+  S
+  M
+  L
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+
+  stores Store[]
+  orders Order[]
+}
+
+model Store {
+  id          String      @id @default(uuid())
+  ownerId     String
+  owner       User        @relation(fields: [ownerId], references: [id])
+  name        String
+  description String?
+  status      StoreStatus @default(pending)
+  createdAt   DateTime    @default(now())
+
+  menuItems MenuItem[]
+  orders    Order[]
+
+  @@index([ownerId])
+}
+
+model MenuItem {
+  id          String  @id @default(uuid())
+  storeId     String
+  store       Store   @relation(fields: [storeId], references: [id])
+  name        String
+  description String
+  priceS      Int
+  priceM      Int
+  priceL      Int
+  isAvailable Boolean @default(true)
+
+  orderItems OrderItem[]
+
+  @@index([storeId])
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  storeId   String
+  store     Store       @relation(fields: [storeId], references: [id])
+  buyerId   String?
+  buyer     User?       @relation(fields: [buyerId], references: [id])
+  status    OrderStatus @default(received)
+  subtotal  Int
+  createdAt DateTime    @default(now())
+
+  customerName    String
+  customerPhone   String
+  customerAddress String
+  customerNotes   String?
+
+  items OrderItem[]
+
+  @@index([storeId])
+  @@index([buyerId])
+}
+
+model OrderItem {
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  name       String
+  size       PizzaSize
+  unitPrice  Int
+  quantity   Int
+
+  @@index([orderId])
+}
