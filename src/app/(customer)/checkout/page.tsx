@@ -7,16 +7,21 @@ import { useCart } from "@/lib/cart/cart-context";
 import { createOrder } from "@/lib/orders/actions";
 import { CartSummary } from "@/components/cart-summary";
 
+const PHONE_PREFIXES = ["010", "011", "016", "017", "018", "019"];
+
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phonePrefix, setPhonePrefix] = useState(PHONE_PREFIXES[0]);
+  const [phoneMiddle, setPhoneMiddle] = useState("");
+  const [phoneLast, setPhoneLast] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const phone = `${phonePrefix}-${phoneMiddle}-${phoneLast}`;
     const order = await createOrder({
       items,
       subtotal,
@@ -61,16 +66,48 @@ export default function CheckoutPage() {
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label htmlFor="phone" className="text-sm font-medium">
+          <label htmlFor="phone-middle" className="text-sm font-medium">
             연락처
           </label>
-          <input
-            id="phone"
-            required
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="rounded border border-black/[.08] bg-transparent px-3 py-2 dark:border-white/[.145]"
-          />
+          <div className="flex items-center gap-2">
+            <select
+              id="phone-prefix"
+              aria-label="전화번호 앞자리"
+              value={phonePrefix}
+              onChange={(e) => setPhonePrefix(e.target.value)}
+              className="rounded border border-black/[.08] bg-transparent px-2 py-2 dark:border-white/[.145]"
+            >
+              {PHONE_PREFIXES.map((prefix) => (
+                <option key={prefix} value={prefix}>
+                  {prefix}
+                </option>
+              ))}
+            </select>
+            <span aria-hidden="true">-</span>
+            <input
+              id="phone-middle"
+              required
+              inputMode="numeric"
+              pattern="[0-9]{3,4}"
+              maxLength={4}
+              aria-label="전화번호 가운데 자리"
+              value={phoneMiddle}
+              onChange={(e) => setPhoneMiddle(e.target.value.replace(/\D/g, ""))}
+              className="w-20 rounded border border-black/[.08] bg-transparent px-3 py-2 dark:border-white/[.145]"
+            />
+            <span aria-hidden="true">-</span>
+            <input
+              id="phone-last"
+              required
+              inputMode="numeric"
+              pattern="[0-9]{4}"
+              maxLength={4}
+              aria-label="전화번호 마지막 자리"
+              value={phoneLast}
+              onChange={(e) => setPhoneLast(e.target.value.replace(/\D/g, ""))}
+              className="w-20 rounded border border-black/[.08] bg-transparent px-3 py-2 dark:border-white/[.145]"
+            />
+          </div>
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="address" className="text-sm font-medium">
