@@ -75,10 +75,10 @@ export default function CheckoutPage() {
               aria-label="전화번호 앞자리"
               value={phonePrefix}
               onChange={(e) => setPhonePrefix(e.target.value)}
-              className="rounded border border-black/[.08] bg-transparent px-2 py-2 dark:border-white/[.145]"
+              className="rounded border border-black/[.08] bg-background px-2 py-2 text-foreground dark:border-white/[.145]"
             >
               {PHONE_PREFIXES.map((prefix) => (
-                <option key={prefix} value={prefix}>
+                <option key={prefix} value={prefix} className="bg-background text-foreground">
                   {prefix}
                 </option>
               ))}
