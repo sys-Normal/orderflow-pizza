@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/current-user";
 import { getAllStoresWithOwner } from "@/lib/stores/queries";
@@ -20,11 +21,19 @@ export default async function AdminStoresPage() {
             key={store.id}
             className="flex flex-col gap-3 rounded-lg border border-black/[.08] bg-surface p-4 dark:border-white/[.145]"
           >
-            <div>
-              <p className="font-medium">{store.name}</p>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                판매자: {store.owner.email}
-              </p>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="font-medium">{store.name}</p>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  판매자: {store.owner.email}
+                </p>
+              </div>
+              <Link
+                href={`/admin/stores/${store.id}/orders`}
+                className="shrink-0 rounded-full border border-black/[.08] px-4 py-2 text-sm font-medium dark:border-white/[.145]"
+              >
+                주문 보기
+              </Link>
             </div>
             <StoreStatusButtons storeId={store.id} currentStatus={store.status} />
           </li>

@@ -55,19 +55,23 @@ export async function updateOrderStatus(
     throw new Error("로그인이 필요합니다.");
   }
 
+  const order = await prisma.order.findUnique({
+    where: { id },
+    select: { storeId: true, store: { select: { ownerId: true } } },
+  });
+  if (!order) {
+    throw new Error("주문을 찾을 수 없습니다.");
+  }
+
   // Sellers may only touch orders placed at a store they own; platform
   // admins can manage any store's orders.
-  if (session.role === "seller") {
-    const owned = await prisma.order.findFirst({
-      where: { id, store: { ownerId: session.userId } },
-      select: { id: true },
-    });
-    if (!owned) {
-      throw new Error("이 주문에 대한 권한이 없습니다.");
-    }
+  if (session.role === "seller" && order.store.ownerId !== session.userId) {
+    throw new Error("이 주문에 대한 권한이 없습니다.");
   }
 
   await prisma.order.update({ where: { id }, data: { status } });
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${id}`);
+  revalidatePath(`/admin/stores/${order.storeId}/orders`);
+  revalidatePath("/admin/orders/search");
 }

@@ -73,3 +73,34 @@ export async function getOrderForSession(
   });
   return row ? toOrder(row) : undefined;
 }
+
+// Platform-admin drill-down: a single store's orders (not scoped to a
+// logged-in owner, since the admin is browsing someone else's store).
+export async function getOrdersForStore(storeId: string): Promise<Order[]> {
+  const rows = await prisma.order.findMany({
+    where: { storeId },
+    include: orderInclude,
+    orderBy: { createdAt: "desc" },
+  });
+  return rows.map(toOrder);
+}
+
+// Platform-admin cross-store lookup for the rare "find this one order"
+// case — not meant for routine browsing (see getOrdersForStore for that).
+export async function searchOrders(query: string): Promise<Order[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  const rows = await prisma.order.findMany({
+    where: {
+      OR: [
+        { id: { contains: trimmed } },
+        { customerPhone: { contains: trimmed } },
+        { customerName: { contains: trimmed } },
+      ],
+    },
+    include: orderInclude,
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+  return rows.map(toOrder);
+}

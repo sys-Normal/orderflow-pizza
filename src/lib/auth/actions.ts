@@ -39,7 +39,7 @@ export async function loginAction(
     }
   );
 
-  redirect("/admin/orders");
+  redirect(user.role === "platform_admin" ? "/admin/stores" : "/admin/orders");
 }
 
 export async function logoutAction() {

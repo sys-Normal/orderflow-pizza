@@ -6,3 +6,7 @@ export async function getAllStoresWithOwner() {
     orderBy: { createdAt: "asc" },
   });
 }
+
+export async function getStoreById(id: string) {
+  return prisma.store.findUnique({ where: { id } });
+}
