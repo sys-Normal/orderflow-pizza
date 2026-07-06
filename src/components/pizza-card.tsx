@@ -24,7 +24,7 @@ export function PizzaCard({ pizza }: { pizza: Pizza }) {
   }, [pressed]);
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-black/[.08] p-4 dark:border-white/[.145]">
+    <div className="flex flex-col gap-3 rounded-lg border border-black/[.08] bg-surface p-4 dark:border-white/[.145]">
       <div>
         <h3 className="text-base font-semibold">{pizza.name}</h3>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -40,7 +40,7 @@ export function PizzaCard({ pizza }: { pizza: Pizza }) {
             onClick={() => setSize(s)}
             className={`rounded-full border px-3 py-1 text-sm ${
               size === s
-                ? "border-foreground bg-foreground text-background"
+                ? "border-primary bg-primary text-primary-foreground"
                 : "border-black/[.08] dark:border-white/[.145]"
             }`}
           >
@@ -64,10 +64,8 @@ export function PizzaCard({ pizza }: { pizza: Pizza }) {
             showToast(`${pizza.name} 장바구니에 담았습니다`);
             setPressed(true);
           }}
-          className={`rounded-full px-4 py-2 text-sm font-medium text-background transition-colors ${
-            pressed
-              ? "bg-[#383838] dark:bg-[#ccc]"
-              : "bg-foreground hover:bg-[#383838] dark:hover:bg-[#ccc]"
+          className={`rounded-full px-4 py-2 text-sm font-medium text-primary-foreground transition-colors ${
+            pressed ? "bg-primary/80" : "bg-primary hover:bg-primary/90"
           }`}
         >
           장바구니 담기

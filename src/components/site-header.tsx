@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCart } from "@/lib/cart/cart-context";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function SiteHeader() {
   const { itemCount } = useCart();
@@ -15,6 +16,7 @@ export function SiteHeader() {
         <nav className="flex items-center gap-4 text-sm font-medium">
           <Link href="/menu">메뉴</Link>
           <Link href="/cart">장바구니 ({itemCount})</Link>
+          <ThemeToggle />
         </nav>
       </div>
     </header>

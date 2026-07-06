@@ -12,7 +12,7 @@ export default function Home() {
       <div className="flex gap-4">
         <Link
           href="/menu"
-          className="rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
+          className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           메뉴 보러가기
         </Link>

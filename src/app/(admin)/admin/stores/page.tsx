@@ -18,7 +18,7 @@ export default async function AdminStoresPage() {
         {stores.map((store) => (
           <li
             key={store.id}
-            className="flex flex-col gap-3 rounded-lg border border-black/[.08] p-4 dark:border-white/[.145]"
+            className="flex flex-col gap-3 rounded-lg border border-black/[.08] bg-surface p-4 dark:border-white/[.145]"
           >
             <div>
               <p className="font-medium">{store.name}</p>

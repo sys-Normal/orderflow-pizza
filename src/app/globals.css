@@ -1,22 +1,36 @@
 @import "tailwindcss";
 
+/* Dark mode is driven by the `.dark` class (see src/lib/theme) instead of
+   only `prefers-color-scheme`, so a manual override can coexist with the
+   system-default behavior. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --surface: #ffffff;
+  --primary: #1a73e8;
+  --primary-foreground: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Material Design dark theme baseline (#121212 surface, not pure black) with
+   Google's dark-mode blue as the desaturated primary accent. */
+.dark {
+  --background: #121212;
+  --foreground: rgba(255, 255, 255, 0.87);
+  --surface: #1e1e1e;
+  --primary: #8ab4f8;
+  --primary-foreground: #202124;
 }
 
 body {

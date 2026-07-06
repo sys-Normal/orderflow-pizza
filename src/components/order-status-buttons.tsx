@@ -25,7 +25,7 @@ export function OrderStatusButtons({
           onClick={() => startTransition(() => updateOrderStatus(orderId, status))}
           className={`rounded-full border px-3 py-1 text-sm disabled:opacity-50 ${
             currentStatus === status
-              ? "border-foreground bg-foreground text-background"
+              ? "border-primary bg-primary text-primary-foreground"
               : "border-black/[.08] dark:border-white/[.145]"
           }`}
         >

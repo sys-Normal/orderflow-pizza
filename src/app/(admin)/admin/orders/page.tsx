@@ -27,7 +27,7 @@ export default async function AdminOrdersPage() {
             <li key={order.id}>
               <Link
                 href={`/admin/orders/${order.id}`}
-                className="flex items-center justify-between gap-4 rounded-lg border border-black/[.08] p-4 dark:border-white/[.145]"
+                className="flex items-center justify-between gap-4 rounded-lg border border-black/[.08] bg-surface p-4 dark:border-white/[.145]"
               >
                 <div>
                   <p className="font-medium">{order.customer.name}</p>

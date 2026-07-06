@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/lib/auth/actions";
 import type { SessionRole } from "@/lib/auth/session";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AdminNav({ role }: { role?: SessionRole }) {
   const pathname = usePathname();
@@ -20,6 +21,7 @@ export function AdminNav({ role }: { role?: SessionRole }) {
           {role === "platform_admin" && (
             <Link href="/admin/stores">매장 관리</Link>
           )}
+          <ThemeToggle />
           <form action={logoutAction}>
             <button type="submit">로그아웃</button>
           </form>
