@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Pizza, PizzaSize } from "@/lib/menu/types";
 import { useCart } from "@/lib/cart/cart-context";
+import { useToast } from "@/lib/toast/toast-context";
 
 const SIZES: PizzaSize[] = ["S", "M", "L"];
 
@@ -12,7 +13,15 @@ function formatPrice(amount: number) {
 
 export function PizzaCard({ pizza }: { pizza: Pizza }) {
   const [size, setSize] = useState<PizzaSize>("M");
+  const [pressed, setPressed] = useState(false);
   const { addItem } = useCart();
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    if (!pressed) return;
+    const timer = setTimeout(() => setPressed(false), 200);
+    return () => clearTimeout(timer);
+  }, [pressed]);
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-black/[.08] p-4 dark:border-white/[.145]">
@@ -44,16 +53,22 @@ export function PizzaCard({ pizza }: { pizza: Pizza }) {
         <span className="font-medium">{formatPrice(pizza.prices[size])}</span>
         <button
           type="button"
-          onClick={() =>
+          onClick={() => {
             addItem({
               pizzaId: pizza.id,
               name: pizza.name,
               size,
               unitPrice: pizza.prices[size],
               quantity: 1,
-            })
-          }
-          className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
+            });
+            showToast(`${pizza.name} 장바구니에 담았습니다`);
+            setPressed(true);
+          }}
+          className={`rounded-full px-4 py-2 text-sm font-medium text-background transition-colors ${
+            pressed
+              ? "bg-[#383838] dark:bg-[#ccc]"
+              : "bg-foreground hover:bg-[#383838] dark:hover:bg-[#ccc]"
+          }`}
         >
           장바구니 담기
         </button>
