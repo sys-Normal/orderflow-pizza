@@ -2,10 +2,23 @@
 
 import Link from "next/link";
 import { useCart } from "@/lib/cart/cart-context";
+import { useToast } from "@/lib/toast/toast-context";
 import { CartSummary } from "@/components/cart-summary";
+import type { CartItem } from "@/lib/cart/types";
 
 export default function CartPage() {
   const { items, subtotal, updateQuantity, removeItem } = useCart();
+  const { showToast } = useToast();
+
+  function handleRemove(pizzaId: string, size: CartItem["size"]) {
+    const item = items.find(
+      (line) => line.pizzaId === pizzaId && line.size === size
+    );
+    removeItem(pizzaId, size);
+    if (item) {
+      showToast(`${item.name} 삭제되었습니다`);
+    }
+  }
 
   if (items.length === 0) {
     return (
@@ -31,7 +44,7 @@ export default function CartPage() {
         items={items}
         subtotal={subtotal}
         onUpdateQuantity={updateQuantity}
-        onRemove={removeItem}
+        onRemove={handleRemove}
       />
       <Link
         href="/checkout"
