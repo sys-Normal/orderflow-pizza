@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/db";
-import type { Pizza } from "@/lib/menu/types";
+import type { MenuCategory, Pizza } from "@/lib/menu/types";
 
 function toPizza(item: {
   id: string;
   name: string;
   description: string;
+  category: string;
   priceS: number;
   priceM: number;
   priceL: number;
@@ -13,6 +14,7 @@ function toPizza(item: {
     id: item.id,
     name: item.name,
     description: item.description,
+    category: item.category as MenuCategory,
     prices: { S: item.priceS, M: item.priceM, L: item.priceL },
   };
 }

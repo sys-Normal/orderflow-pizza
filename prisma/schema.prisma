@@ -36,6 +36,13 @@ enum PizzaSize {
   L
 }
 
+enum MenuCategory {
+  pizza
+  chicken
+  side
+  drink
+}
+
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -63,15 +70,16 @@ model Store {
 }
 
 model MenuItem {
-  id          String  @id @default(uuid())
+  id          String       @id @default(uuid())
   storeId     String
-  store       Store   @relation(fields: [storeId], references: [id])
+  store       Store        @relation(fields: [storeId], references: [id])
   name        String
   description String
+  category    MenuCategory @default(pizza)
   priceS      Int
   priceM      Int
   priceL      Int
-  isAvailable Boolean @default(true)
+  isAvailable Boolean      @default(true)
 
   orderItems OrderItem[]
 
