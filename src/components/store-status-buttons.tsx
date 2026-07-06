@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { updateStoreStatus } from "@/lib/stores/actions";
 import type { StoreStatus } from "@/generated/prisma/client";
+import { FullScreenLoading } from "@/components/full-screen-loading";
 
 const STATUSES: StoreStatus[] = ["pending", "approved", "suspended", "rejected"];
 
@@ -24,6 +25,7 @@ export function StoreStatusButtons({
 
   return (
     <div className="flex gap-2">
+      {isPending && <FullScreenLoading message="상태 변경 중..." />}
       {STATUSES.map((status) => (
         <button
           key={status}

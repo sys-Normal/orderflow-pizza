@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { updateOrderStatus } from "@/lib/orders/actions";
 import { ORDER_STATUS_LABELS, type OrderStatus } from "@/lib/orders/types";
+import { FullScreenLoading } from "@/components/full-screen-loading";
 
 const STATUSES: OrderStatus[] = ["received", "preparing", "ready", "completed"];
 
@@ -17,6 +18,7 @@ export function OrderStatusButtons({
 
   return (
     <div className="flex gap-2">
+      {isPending && <FullScreenLoading message="상태 변경 중..." />}
       {STATUSES.map((status) => (
         <button
           key={status}
