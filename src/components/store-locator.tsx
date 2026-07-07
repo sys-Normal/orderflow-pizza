@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { StoresMapLazy } from "@/components/stores-map-lazy";
 import { fetchNearbyStores } from "@/lib/stores/actions";
 import { Spinner } from "@/components/spinner";
@@ -108,9 +109,32 @@ export function StoreLocator() {
           반경 3km 이내에 매장이 없습니다.
         </p>
       ) : (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          반경 3km 이내 매장 {stores.length}곳 — 마커를 눌러 매장 정보를 확인하세요.
-        </p>
+        <div className="flex flex-col gap-2">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            반경 3km 이내 매장 {stores.length}곳
+          </p>
+          <div className="flex max-h-80 flex-col overflow-y-auto rounded-lg border border-black/[.08] dark:border-white/[.145]">
+            {stores.map((store) => (
+              <div
+                key={store.id}
+                className="flex items-center justify-between gap-4 border-b border-black/[.08] p-4 last:border-b-0 dark:border-white/[.145]"
+              >
+                <div>
+                  <p className="font-medium">{store.name}</p>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                    {store.phone} · {store.distanceKm.toFixed(1)}km
+                  </p>
+                </div>
+                <Link
+                  href={`/menu?storeId=${store.id}`}
+                  className="shrink-0 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                >
+                  주문하기
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
