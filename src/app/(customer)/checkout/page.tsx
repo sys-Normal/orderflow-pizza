@@ -6,29 +6,46 @@ import Link from "next/link";
 import { useCart } from "@/lib/cart/cart-context";
 import { createOrder } from "@/lib/orders/actions";
 import { CartSummary } from "@/components/cart-summary";
+import { FullScreenLoading } from "@/components/full-screen-loading";
+import { useToast } from "@/lib/toast/toast-context";
 
 const PHONE_PREFIXES = ["010", "011", "016", "017", "018", "019"];
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
+  const { showToast } = useToast();
   const [name, setName] = useState("");
   const [phonePrefix, setPhonePrefix] = useState(PHONE_PREFIXES[0]);
   const [phoneMiddle, setPhoneMiddle] = useState("");
   const [phoneLast, setPhoneLast] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const phone = `${phonePrefix}-${phoneMiddle}-${phoneLast}`;
-    const order = await createOrder({
-      items,
-      subtotal,
-      customer: { name, phone, address, notes: notes || undefined },
-    });
-    clearCart();
-    router.push(`/confirmation/${order.id}`);
+    setIsSubmitting(true);
+    try {
+      const phone = `${phonePrefix}-${phoneMiddle}-${phoneLast}`;
+      const order = await createOrder({
+        items,
+        subtotal,
+        customer: { name, phone, address, notes: notes || undefined },
+      });
+      clearCart();
+      router.push(`/confirmation/${order.id}`);
+    } catch {
+      setIsSubmitting(false);
+      showToast("주문에 실패했습니다. 다시 시도해주세요.");
+    }
+  }
+
+  // Guard this before the empty-cart check below: clearCart() (on success)
+  // flips items to [] and would otherwise flash that "cart is empty" view
+  // for a moment before router.push finishes navigating away.
+  if (isSubmitting) {
+    return <FullScreenLoading message="주문 처리 중..." />;
   }
 
   if (items.length === 0) {
