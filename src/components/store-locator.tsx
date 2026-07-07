@@ -16,14 +16,13 @@ type LocationStatus =
   | "unsupported"
   | "error";
 
-function isGeolocationSupported() {
-  return typeof navigator !== "undefined" && "geolocation" in navigator;
-}
-
 export function StoreLocator() {
-  const [status, setStatus] = useState<LocationStatus>(() =>
-    isGeolocationSupported() ? "requesting" : "unsupported"
-  );
+  // Always start at "requesting" on both server and client — Node has its
+  // own global `navigator` (without `.geolocation`) since Node 21, so
+  // computing support during the initial render diverges between SSR and
+  // the browser and causes a hydration mismatch. The actual support check
+  // only runs client-side, inside the effect below.
+  const [status, setStatus] = useState<LocationStatus>("requesting");
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(
     null
   );
@@ -31,11 +30,17 @@ export function StoreLocator() {
   const [deniedNoticeDismissed, setDeniedNoticeDismissed] = useState(false);
 
   // Kicks off the actual permission prompt whenever status flips back to
-  // "requesting" (on mount every time this screen is opened). All state
-  // updates here happen inside getCurrentPosition's callbacks, not
-  // synchronously in the effect body itself.
+  // "requesting" (on mount every time this screen is opened).
   useEffect(() => {
     if (status !== "requesting") return;
+    if (!("geolocation" in navigator)) {
+      // Must be set here rather than during render/lazy-init — this is the
+      // client-only support check itself (see comment on useState above),
+      // so there's no earlier point to compute it without an SSR mismatch.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setStatus("unsupported");
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setCoords({
