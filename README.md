@@ -40,3 +40,4 @@
 ## 사용 라이브러리
 
 - **[lucide-react](https://lucide.dev/)** (ISC License) — 내비게이션 로고(피자), 메뉴(포크·나이프), 장바구니 아이콘과 다크/라이트 모드 스위치의 해/달 아이콘에 사용. 그 외 화면에 남아있는 손으로 그린 아이콘(`src/components/icons.tsx`)은 별도 라이브러리 없이 직접 그린 SVG path입니다.
+- **[Leaflet](https://leafletjs.com/)** (BSD-2-Clause License) / **[react-leaflet](https://react-leaflet.js.org/)** (Hippocratic License 2.1) — 매장 위치 지도 표시에 사용 (`src/components/store-map.tsx`). Hippocratic 2.1은 오픈소스이되 UN 인권선언 위반 목적 사용을 금지하는 조항이 있는 라이선스입니다. 지도 타일은 [OpenStreetMap](https://www.openstreetmap.org/copyright)에서 API 키 없이 무료로 제공받습니다. Leaflet은 브라우저 `window`가 필요해 `next/dynamic`으로 SSR을 비활성화해서 불러옵니다 (`src/components/store-map-lazy.tsx`). 마커 아이콘은 Leaflet 기본 이미지 대신 인라인 SVG(원+삼각형)로 직접 그렸습니다.

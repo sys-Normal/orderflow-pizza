@@ -61,6 +61,8 @@ model Store {
   name        String
   description String?
   status      StoreStatus @default(pending)
+  latitude    Float       @default(37.5665)
+  longitude   Float       @default(126.9780)
   createdAt   DateTime    @default(now())
 
   menuItems MenuItem[]

@@ -163,12 +163,15 @@ async function main() {
 
   const store = await prisma.store.upsert({
     where: { id: "orderflow-main" },
-    update: {},
+    update: { latitude: 37.4979, longitude: 127.0276 },
     create: {
       id: "orderflow-main",
       ownerId: owner.id,
       name: "OrderFlow Pizza",
       status: "approved",
+      // Arbitrary real-world coordinate (Gangnam Station) for map display.
+      latitude: 37.4979,
+      longitude: 127.0276,
     },
   });
 

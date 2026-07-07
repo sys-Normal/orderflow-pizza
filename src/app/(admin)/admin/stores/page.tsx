@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/current-user";
 import { getAllStoresWithOwner } from "@/lib/stores/queries";
 import { StoreStatusButtons } from "@/components/store-status-buttons";
+import { StoreMapLazy } from "@/components/store-map-lazy";
 
 export default async function AdminStoresPage() {
   const session = await getSessionUser();
@@ -36,6 +37,12 @@ export default async function AdminStoresPage() {
               </Link>
             </div>
             <StoreStatusButtons storeId={store.id} currentStatus={store.status} />
+            <StoreMapLazy
+              latitude={store.latitude}
+              longitude={store.longitude}
+              name={store.name}
+              className="h-40 w-full"
+            />
           </li>
         ))}
       </ul>
