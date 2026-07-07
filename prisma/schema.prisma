@@ -60,6 +60,7 @@ model Store {
   owner       User        @relation(fields: [ownerId], references: [id])
   name        String
   description String?
+  phone       String      @default("02-0000-0000")
   status      StoreStatus @default(pending)
   latitude    Float       @default(37.5665)
   longitude   Float       @default(126.9780)
