@@ -3,6 +3,7 @@
 import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import L from "leaflet";
 import Link from "next/link";
+import { Phone } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 import type { NearbyStore } from "@/lib/stores/queries";
 
@@ -65,13 +66,18 @@ export function StoresMap({
           position={[store.latitude, store.longitude]}
           icon={storeMarkerIcon}
         >
-          <Popup>
-            <div className="flex flex-col gap-1">
-              <p className="font-semibold">{store.name}</p>
-              <p className="text-sm">{store.phone}</p>
+          <Popup minWidth={200}>
+            <div className="flex flex-col gap-2">
+              <p className="text-base font-semibold leading-snug">
+                {store.name}
+              </p>
+              <p className="flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-400">
+                <Phone className="h-3.5 w-3.5 shrink-0" />
+                {store.phone}
+              </p>
               <Link
                 href={`/menu?storeId=${store.id}`}
-                className="mt-1 inline-block rounded-full bg-primary px-3 py-1 text-center text-sm font-medium text-primary-foreground"
+                className="mt-1 block rounded-full bg-primary px-3 py-1.5 text-center text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 주문하기
               </Link>
