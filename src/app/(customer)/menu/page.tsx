@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { getMenu } from "@/lib/menu/queries";
 import { getPrimaryStore, getStoreById } from "@/lib/stores/queries";
 import { MenuCategorySection } from "@/components/menu-category-section";
-import { StoreMapLazy } from "@/components/store-map-lazy";
 import { MENU_CATEGORY_LABELS, MENU_CATEGORY_ORDER } from "@/lib/menu/types";
 
 export default async function MenuPage({
@@ -12,8 +11,8 @@ export default async function MenuPage({
 }) {
   const { storeId } = await searchParams;
   // No storeId means the customer landed on /menu directly (e.g. the nav
-  // "메뉴" tab) rather than through the store-selection map, so fall back to
-  // the default seeded store.
+  // "메뉴" tab) rather than through the /stores selection flow, so fall back
+  // to the default seeded store.
   const store = storeId ? await getStoreById(storeId) : await getPrimaryStore();
   if (!store) {
     notFound();
@@ -24,23 +23,13 @@ export default async function MenuPage({
     <div className="flex flex-col gap-10">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">메뉴</h1>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{store.name}</p>
+        {store.description && (
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            {store.description}
+          </p>
+        )}
       </div>
-
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-lg font-semibold">{store.name}</h2>
-          {store.description && (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              {store.description}
-            </p>
-          )}
-        </div>
-        <StoreMapLazy
-          latitude={store.latitude}
-          longitude={store.longitude}
-          name={store.name}
-        />
-      </section>
 
       {MENU_CATEGORY_ORDER.map((category) => {
         const categoryItems = items.filter((item) => item.category === category);
