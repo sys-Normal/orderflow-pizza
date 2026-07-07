@@ -11,7 +11,15 @@ function formatPrice(amount: number) {
   return `${amount.toLocaleString("ko-KR")}원`;
 }
 
-export function PizzaCard({ pizza }: { pizza: Pizza }) {
+export function PizzaCard({
+  pizza,
+  storeId,
+  storeName,
+}: {
+  pizza: Pizza;
+  storeId: string;
+  storeName: string;
+}) {
   const [size, setSize] = useState<PizzaSize>("M");
   const [pressed, setPressed] = useState(false);
   const { addItem } = useCart();
@@ -60,6 +68,8 @@ export function PizzaCard({ pizza }: { pizza: Pizza }) {
               size,
               unitPrice: pizza.prices[size],
               quantity: 1,
+              storeId,
+              storeName,
             });
             showToast(`${pizza.name} 장바구니에 담았습니다`);
             setPressed(true);

@@ -6,4 +6,6 @@ export type CartItem = {
   size: PizzaSize;
   unitPrice: number;
   quantity: number;
+  storeId: string;
+  storeName: string;
 };

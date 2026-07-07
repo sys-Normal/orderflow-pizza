@@ -37,6 +37,8 @@ export default async function MenuPage() {
             key={category}
             title={MENU_CATEGORY_LABELS[category]}
             items={categoryItems}
+            storeId={store.id}
+            storeName={store.name}
           />
         );
       })}

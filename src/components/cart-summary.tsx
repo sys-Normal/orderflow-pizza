@@ -1,5 +1,10 @@
 import type { CartItem } from "@/lib/cart/types";
 
+type SummaryLine = Pick<
+  CartItem,
+  "pizzaId" | "name" | "size" | "unitPrice" | "quantity"
+>;
+
 function formatPrice(amount: number) {
   return `${amount.toLocaleString("ko-KR")}원`;
 }
@@ -10,7 +15,7 @@ export function CartSummary({
   onUpdateQuantity,
   onRemove,
 }: {
-  items: CartItem[];
+  items: SummaryLine[];
   subtotal: number;
   onUpdateQuantity?: (pizzaId: string, size: CartItem["size"], quantity: number) => void;
   onRemove?: (pizzaId: string, size: CartItem["size"]) => void;

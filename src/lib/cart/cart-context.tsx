@@ -2,13 +2,16 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useMemo,
+  useState,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { createLocalStore } from "@/lib/create-local-store";
 import type { CartItem } from "@/lib/cart/types";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 const store = createLocalStore<CartItem[]>("orderflow_cart", []);
 
@@ -32,7 +35,7 @@ function sameLine(a: CartItem, pizzaId: string, size: CartItem["size"]) {
   return a.pizzaId === pizzaId && a.size === size;
 }
 
-function addItem(item: CartItem) {
+function applyAddItem(item: CartItem) {
   const items = store.read();
   const existing = items.find((line) => sameLine(line, item.pizzaId, item.size));
   if (existing) {
@@ -78,6 +81,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
     store.getSnapshot,
     store.getServerSnapshot
   );
+  const [pendingItem, setPendingItem] = useState<CartItem | null>(null);
+
+  // A cart can only hold items from one store at a time, since an order is
+  // placed against a single storeId. Adding from a different store asks the
+  // customer to confirm swapping the cart instead of silently mixing stores.
+  const addItem = useCallback((item: CartItem) => {
+    const currentStoreId = store.read()[0]?.storeId;
+    if (currentStoreId && currentStoreId !== item.storeId) {
+      setPendingItem(item);
+      return;
+    }
+    applyAddItem(item);
+  }, []);
 
   const value = useMemo<CartContextValue>(() => {
     const subtotal = items.reduce(
@@ -94,9 +110,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
       subtotal,
       itemCount,
     };
-  }, [items]);
+  }, [items, addItem]);
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+      {pendingItem && (
+        <ConfirmDialog
+          title="다른 매장 메뉴 담기"
+          message={`장바구니에 담긴 ${items[0]?.storeName ?? ""} 메뉴를 비우고 ${
+            pendingItem.storeName
+          } 메뉴로 새로 담을까요?`}
+          confirmLabel="교체하기"
+          cancelLabel="취소"
+          onConfirm={() => {
+            clearCart();
+            applyAddItem(pendingItem);
+            setPendingItem(null);
+          }}
+          onCancel={() => setPendingItem(null)}
+        />
+      )}
+    </CartContext.Provider>
+  );
 }
 
 export function useCart(): CartContextValue {

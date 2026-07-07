@@ -8,9 +8,13 @@ import type { Pizza } from "@/lib/menu/types";
 export function MenuCategorySection({
   title,
   items,
+  storeId,
+  storeName,
 }: {
   title: string;
   items: Pizza[];
+  storeId: string;
+  storeName: string;
 }) {
   const [expanded, setExpanded] = useState(true);
 
@@ -32,7 +36,12 @@ export function MenuCategorySection({
       {expanded && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {items.map((item) => (
-            <PizzaCard key={item.id} pizza={item} />
+            <PizzaCard
+              key={item.id}
+              pizza={item}
+              storeId={storeId}
+              storeName={storeName}
+            />
           ))}
         </div>
       )}
