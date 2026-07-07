@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { StoresMapLazy } from "@/components/stores-map-lazy";
 import { fetchNearbyStores } from "@/lib/stores/actions";
 import { Spinner } from "@/components/spinner";
+import { InfoDialog } from "@/components/info-dialog";
+import { FALLBACK_LOCATION } from "@/lib/constants";
 import type { NearbyStore } from "@/lib/stores/queries";
 
 type LocationStatus =
@@ -25,10 +27,11 @@ export function StoreLocator() {
     null
   );
   const [stores, setStores] = useState<NearbyStore[] | null>(null);
+  const [deniedNoticeDismissed, setDeniedNoticeDismissed] = useState(false);
 
   // Kicks off the actual permission prompt whenever status flips back to
-  // "requesting" (on mount, and when the user clicks the retry button).
-  // All state updates here happen inside getCurrentPosition's callbacks, not
+  // "requesting" (on mount every time this screen is opened). All state
+  // updates here happen inside getCurrentPosition's callbacks, not
   // synchronously in the effect body itself.
   useEffect(() => {
     if (status !== "requesting") return;
@@ -47,15 +50,24 @@ export function StoreLocator() {
     );
   }, [status]);
 
+  // Once we know the outcome (granted or not), always load a map — real GPS
+  // coords when granted, otherwise a fixed fallback location so the screen
+  // isn't just an empty error state.
+  const effectiveCoords = coords ?? FALLBACK_LOCATION;
+
   useEffect(() => {
-    if (status !== "granted" || !coords) return;
+    if (status === "requesting") return;
     let cancelled = false;
-    fetchNearbyStores(coords.latitude, coords.longitude).then((result) => {
-      if (!cancelled) setStores(result);
-    });
+    fetchNearbyStores(effectiveCoords.latitude, effectiveCoords.longitude).then(
+      (result) => {
+        if (!cancelled) setStores(result);
+      }
+    );
     return () => {
       cancelled = true;
     };
+    // effectiveCoords is derived from coords/status already in the deps below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, coords]);
 
   if (status === "requesting") {
@@ -69,32 +81,24 @@ export function StoreLocator() {
     );
   }
 
-  if (status === "denied" || status === "unsupported" || status === "error") {
-    return (
-      <div className="flex flex-col items-center gap-3 rounded-lg border border-black/[.08] bg-surface p-8 text-center dark:border-white/[.145]">
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          {status === "unsupported"
-            ? "이 브라우저에서는 위치 정보를 사용할 수 없습니다."
-            : "주변 매장을 보려면 위치 권한을 허용해주세요."}
-        </p>
-        {status !== "unsupported" && (
-          <button
-            type="button"
-            onClick={() => setStatus("requesting")}
-            className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            위치 권한 허용
-          </button>
-        )}
-      </div>
-    );
-  }
-
-  if (!coords) return null;
-
   return (
     <div className="flex flex-col gap-4">
-      <StoresMapLazy center={coords} stores={stores ?? []} className="h-96 w-full" />
+      {status === "denied" && !deniedNoticeDismissed && (
+        <InfoDialog
+          message="위치 서비스에 동의하지 않으면 위치 기반 서비스를 제공받을 수 없습니다."
+          onDismiss={() => setDeniedNoticeDismissed(true)}
+        />
+      )}
+      {(status === "unsupported" || status === "error") && (
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          위치 정보를 가져올 수 없어 기본 위치를 기준으로 표시합니다.
+        </p>
+      )}
+      <StoresMapLazy
+        center={effectiveCoords}
+        stores={stores ?? []}
+        className="h-96 w-full"
+      />
       {stores === null ? (
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           주변 매장을 찾는 중...
