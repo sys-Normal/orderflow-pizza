@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CircleCheck } from "lucide-react";
 import { getOrder } from "@/lib/orders/queries";
 import { CartSummary } from "@/components/cart-summary";
 
@@ -29,7 +30,8 @@ export default async function ConfirmationPage({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+          <CircleCheck className="h-6 w-6 text-green-600 dark:text-green-500" />
           주문이 접수되었습니다
         </h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
