@@ -12,7 +12,7 @@ export function SiteHeader() {
     <header className="border-b border-black/[.08] dark:border-white/[.145]">
       <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-6 py-4">
         <Link
-          href="/menu"
+          href="/stores"
           className="flex items-center gap-2 text-lg font-semibold tracking-tight"
         >
           <Pizza className="h-6 w-6 text-primary" />
