@@ -45,7 +45,10 @@ function StoreMarker({ store }: { store: NearbyStore }) {
         },
       }}
     >
-      <Popup minWidth={200}>
+      {/* autoPan off: Leaflet's default "just enough to fit the popup" pan
+          would otherwise run after our panTo and nudge the view again,
+          leaving the marker slightly off-center. */}
+      <Popup minWidth={200} autoPan={false}>
         <div className="flex flex-col gap-2">
           <p className="text-base font-semibold leading-snug">{store.name}</p>
           <p className="flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-400">
