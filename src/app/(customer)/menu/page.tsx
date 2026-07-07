@@ -1,11 +1,24 @@
+import { notFound } from "next/navigation";
 import { getMenu } from "@/lib/menu/queries";
-import { getPrimaryStore } from "@/lib/stores/queries";
+import { getPrimaryStore, getStoreById } from "@/lib/stores/queries";
 import { MenuCategorySection } from "@/components/menu-category-section";
 import { StoreMapLazy } from "@/components/store-map-lazy";
 import { MENU_CATEGORY_LABELS, MENU_CATEGORY_ORDER } from "@/lib/menu/types";
 
-export default async function MenuPage() {
-  const [items, store] = await Promise.all([getMenu(), getPrimaryStore()]);
+export default async function MenuPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ storeId?: string }>;
+}) {
+  const { storeId } = await searchParams;
+  // No storeId means the customer landed on /menu directly (e.g. the nav
+  // "메뉴" tab) rather than through the store-selection map, so fall back to
+  // the default seeded store.
+  const store = storeId ? await getStoreById(storeId) : await getPrimaryStore();
+  if (!store) {
+    notFound();
+  }
+  const items = await getMenu(store.id);
 
   return (
     <div className="flex flex-col gap-10">

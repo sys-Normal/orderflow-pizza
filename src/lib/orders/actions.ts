@@ -6,17 +6,14 @@ import { getSessionUser } from "@/lib/auth/current-user";
 import type { Order, OrderCustomer, OrderItem, OrderStatus } from "@/lib/orders/types";
 
 export async function createOrder(input: {
+  storeId: string;
   items: OrderItem[];
   subtotal: number;
   customer: OrderCustomer;
 }): Promise<Order> {
-  // No store-selection UI yet, so orders go to the single seeded store.
-  // Revisit once multi-store checkout exists.
-  const store = await prisma.store.findFirstOrThrow();
-
   const order = await prisma.order.create({
     data: {
-      storeId: store.id,
+      storeId: input.storeId,
       subtotal: input.subtotal,
       customerName: input.customer.name,
       customerPhone: input.customer.phone,

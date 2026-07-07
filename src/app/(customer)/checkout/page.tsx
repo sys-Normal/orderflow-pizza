@@ -29,6 +29,7 @@ export default function CheckoutPage() {
     try {
       const phone = `${phonePrefix}-${phoneMiddle}-${phoneLast}`;
       const order = await createOrder({
+        storeId: items[0].storeId,
         items,
         subtotal,
         customer: { name, phone, address, notes: notes || undefined },

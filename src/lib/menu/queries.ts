@@ -19,11 +19,9 @@ function toPizza(item: {
   };
 }
 
-export async function getMenu(): Promise<Pizza[]> {
-  // No store-selection UI yet, so we show the single seeded store's menu.
-  const store = await prisma.store.findFirstOrThrow();
+export async function getMenu(storeId: string): Promise<Pizza[]> {
   const items = await prisma.menuItem.findMany({
-    where: { storeId: store.id, isAvailable: true },
+    where: { storeId, isAvailable: true },
   });
   return items.map(toPizza);
 }
