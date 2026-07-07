@@ -7,6 +7,10 @@ import { Phone } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 import type { NearbyStore } from "@/lib/stores/queries";
 
+// Must match the popupAnchor y-offset below — used again when centering the
+// popup itself (see StoreMarker's popupopen handler).
+const POPUP_ANCHOR_Y = 32;
+
 const storeMarkerIcon = L.divIcon({
   html: `
     <svg viewBox="0 0 24 24" width="32" height="36">
@@ -18,7 +22,7 @@ const storeMarkerIcon = L.divIcon({
   className: "",
   iconSize: [32, 36],
   iconAnchor: [16, 36],
-  popupAnchor: [0, -32],
+  popupAnchor: [0, -POPUP_ANCHOR_Y],
 });
 
 const userMarkerIcon = L.divIcon({
@@ -40,14 +44,37 @@ function StoreMarker({ store }: { store: NearbyStore }) {
       position={[store.latitude, store.longitude]}
       icon={storeMarkerIcon}
       eventHandlers={{
-        click: () => {
-          map.panTo([store.latitude, store.longitude], { animate: true });
+        // Center the popup bubble itself, not the marker underneath it —
+        // centering on the marker left the (taller) popup sitting above
+        // the middle of the screen with empty space below it. Runs on
+        // popupopen (not click) so the popup's real rendered height is
+        // available to measure.
+        popupopen: (e) => {
+          const popup = e.popup;
+          // Reading layout right on popupopen can race the browser's layout
+          // of the newly-inserted popup DOM — wait a frame so rects below
+          // reflect where it's actually rendered.
+          requestAnimationFrame(() => {
+            const wrapper = popup
+              .getElement()
+              ?.querySelector<HTMLElement>(".leaflet-popup-content-wrapper");
+            if (!wrapper) return;
+            // Measure the actual on-screen gap between the popup's current
+            // center and the map viewport's center, then nudge by exactly
+            // that (rather than reconstructing it from icon/popup anchor
+            // constants, which don't cleanly account for Leaflet's own
+            // popup layout margins).
+            const mapRect = map.getContainer().getBoundingClientRect();
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const deltaY =
+              mapRect.top + mapRect.height / 2 - (wrapperRect.top + wrapperRect.height / 2);
+            map.panBy([0, -deltaY], { animate: true });
+          });
         },
       }}
     >
       {/* autoPan off: Leaflet's default "just enough to fit the popup" pan
-          would otherwise run after our panTo and nudge the view again,
-          leaving the marker slightly off-center. */}
+          would otherwise run right after and undo our own centering. */}
       <Popup minWidth={200} autoPan={false}>
         <div className="flex flex-col gap-2">
           <p className="text-base font-semibold leading-snug">{store.name}</p>
