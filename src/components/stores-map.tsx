@@ -60,15 +60,17 @@ function StoreMarker({ store }: { store: NearbyStore }) {
               ?.querySelector<HTMLElement>(".leaflet-popup-content-wrapper");
             if (!wrapper) return;
             // Measure the actual on-screen gap between the popup's current
-            // center and the map viewport's center, then nudge by exactly
-            // that (rather than reconstructing it from icon/popup anchor
-            // constants, which don't cleanly account for Leaflet's own
-            // popup layout margins).
+            // center and the map viewport's center on both axes, then nudge
+            // by exactly that (rather than reconstructing it from icon/popup
+            // anchor constants, which don't cleanly account for Leaflet's
+            // own popup layout margins).
             const mapRect = map.getContainer().getBoundingClientRect();
             const wrapperRect = wrapper.getBoundingClientRect();
+            const deltaX =
+              mapRect.left + mapRect.width / 2 - (wrapperRect.left + wrapperRect.width / 2);
             const deltaY =
               mapRect.top + mapRect.height / 2 - (wrapperRect.top + wrapperRect.height / 2);
-            map.panBy([0, -deltaY], { animate: true });
+            map.panBy([-deltaX, -deltaY], { animate: true });
           });
         },
       }}
