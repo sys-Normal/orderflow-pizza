@@ -1,6 +1,6 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet";
 import L from "leaflet";
 import Link from "next/link";
 import { Phone } from "lucide-react";
@@ -32,6 +32,38 @@ const userMarkerIcon = L.divIcon({
   iconAnchor: [10, 10],
 });
 
+function StoreMarker({ store }: { store: NearbyStore }) {
+  const map = useMap();
+
+  return (
+    <Marker
+      position={[store.latitude, store.longitude]}
+      icon={storeMarkerIcon}
+      eventHandlers={{
+        click: () => {
+          map.panTo([store.latitude, store.longitude], { animate: true });
+        },
+      }}
+    >
+      <Popup minWidth={200}>
+        <div className="flex flex-col gap-2">
+          <p className="text-base font-semibold leading-snug">{store.name}</p>
+          <p className="flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-400">
+            <Phone className="h-3.5 w-3.5 shrink-0" />
+            {store.phone}
+          </p>
+          <Link
+            href={`/menu?storeId=${store.id}`}
+            className="mt-1 block rounded-full bg-primary px-3 py-1.5 text-center text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            주문하기
+          </Link>
+        </div>
+      </Popup>
+    </Marker>
+  );
+}
+
 export function StoresMap({
   center,
   stores,
@@ -61,29 +93,7 @@ export function StoresMap({
       />
       <Marker position={[center.latitude, center.longitude]} icon={userMarkerIcon} />
       {stores.map((store) => (
-        <Marker
-          key={store.id}
-          position={[store.latitude, store.longitude]}
-          icon={storeMarkerIcon}
-        >
-          <Popup minWidth={200}>
-            <div className="flex flex-col gap-2">
-              <p className="text-base font-semibold leading-snug">
-                {store.name}
-              </p>
-              <p className="flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-400">
-                <Phone className="h-3.5 w-3.5 shrink-0" />
-                {store.phone}
-              </p>
-              <Link
-                href={`/menu?storeId=${store.id}`}
-                className="mt-1 block rounded-full bg-primary px-3 py-1.5 text-center text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                주문하기
-              </Link>
-            </div>
-          </Popup>
-        </Marker>
+        <StoreMarker key={store.id} store={store} />
       ))}
     </MapContainer>
   );
