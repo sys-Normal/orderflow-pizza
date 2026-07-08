@@ -93,7 +93,7 @@ function StoreMarker({ store }: { store: NearbyStore }) {
             type="button"
             onClick={handleCopyPhone}
             aria-label={`전화번호 복사: ${store.phone}`}
-            className="flex items-center gap-1.5 text-left text-sm text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
+            className="flex w-auto shrink-0 cursor-pointer items-center gap-1.5 self-start text-left text-sm text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
           >
             <Phone className="h-3.5 w-3.5 shrink-0" />
             {store.phone}
