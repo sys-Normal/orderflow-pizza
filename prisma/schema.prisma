@@ -46,7 +46,8 @@ enum MenuCategory {
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
-  passwordHash String
+  passwordHash String?
+  googleId     String?  @unique
   role         Role
   createdAt    DateTime @default(now())
 

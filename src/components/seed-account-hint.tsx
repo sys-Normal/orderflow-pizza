@@ -2,10 +2,15 @@
 
 import { useToast } from "@/lib/toast/toast-context";
 
-const SEED_ACCOUNTS = [
-  { label: "판매자", email: "seller@orderflow.pizza", password: "seller1234!" },
-  { label: "플랫폼 관리자", email: "admin@orderflow.pizza", password: "admin1234!" },
-];
+const SEED_ACCOUNTS = {
+  seller: { label: "판매자", email: "seller@orderflow.pizza", password: "seller1234!" },
+  platform_admin: {
+    label: "플랫폼 관리자",
+    email: "admin@orderflow.pizza",
+    password: "admin1234!",
+  },
+  buyer: { label: "구매자", email: "buyer@orderflow.pizza", password: "buyer1234!" },
+} as const;
 
 async function copyToClipboard(value: string): Promise<boolean> {
   try {
@@ -58,14 +63,19 @@ function CopyableCode({
   );
 }
 
-export function SeedAccountHint() {
+export function SeedAccountHint({
+  roles = ["seller", "platform_admin"],
+}: {
+  roles?: (keyof typeof SEED_ACCOUNTS)[];
+}) {
   const { showToast } = useToast();
   const handleFailed = () => showToast("복사에 실패했습니다. 직접 선택해 복사해주세요.");
+  const accounts = roles.map((role) => SEED_ACCOUNTS[role]);
 
   return (
     <div className="flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-400">
       <p>포트폴리오용 시드 계정 (클릭하면 복사됩니다)</p>
-      {SEED_ACCOUNTS.map((account) => (
+      {accounts.map((account) => (
         <p key={account.email} className="flex flex-wrap items-center gap-1.5">
           <span>{account.label}:</span>
           <CopyableCode

@@ -3,8 +3,10 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 export const SESSION_COOKIE = "session";
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
 
-export type SessionRole = "seller" | "platform_admin";
+export type SessionRole = "seller" | "platform_admin" | "buyer";
 export type SessionPayload = { userId: string; role: SessionRole };
+
+const VALID_ROLES: SessionRole[] = ["seller", "platform_admin", "buyer"];
 
 function getSecret(): string {
   const secret = process.env.SESSION_SECRET;
@@ -39,7 +41,7 @@ export function verifySessionValue(value: string): SessionPayload | null {
     return null;
   }
   if (Date.now() > Number(expiresAt)) return null;
-  if (role !== "seller" && role !== "platform_admin") return null;
+  if (!VALID_ROLES.includes(role as SessionRole)) return null;
 
-  return { userId, role };
+  return { userId, role: role as SessionRole };
 }

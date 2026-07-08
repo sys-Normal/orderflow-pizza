@@ -20,7 +20,7 @@ export async function loginAction(
   const password = String(formData.get("password") ?? "");
 
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || !verifyPassword(password, user.passwordHash)) {
+  if (!user || !user.passwordHash || !verifyPassword(password, user.passwordHash)) {
     return { error: "이메일 또는 비밀번호가 올바르지 않습니다." };
   }
   if (user.role !== "seller" && user.role !== "platform_admin") {

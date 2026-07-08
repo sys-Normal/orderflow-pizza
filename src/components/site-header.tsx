@@ -4,8 +4,9 @@ import Link from "next/link";
 import { Pizza, ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/cart/cart-context";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { buyerLogoutAction } from "@/lib/auth/buyer-actions";
 
-export function SiteHeader() {
+export function SiteHeader({ buyerEmail }: { buyerEmail?: string | null }) {
   const { itemCount } = useCart();
 
   return (
@@ -31,6 +32,16 @@ export function SiteHeader() {
               </span>
             )}
           </Link>
+          {buyerEmail && (
+            <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+              <span className="hidden sm:inline">{buyerEmail}</span>
+              <form action={buyerLogoutAction}>
+                <button type="submit" className="hover:underline">
+                  로그아웃
+                </button>
+              </form>
+            </div>
+          )}
           <ThemeToggle />
         </nav>
       </div>

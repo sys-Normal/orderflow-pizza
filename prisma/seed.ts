@@ -6,6 +6,7 @@ import { hashPassword } from "../src/lib/auth/password";
 const SEED_ACCOUNTS = [
   { email: "seller@orderflow.pizza", password: "seller1234!", role: "seller" as const },
   { email: "admin@orderflow.pizza", password: "admin1234!", role: "platform_admin" as const },
+  { email: "buyer@orderflow.pizza", password: "buyer1234!", role: "buyer" as const },
 ];
 
 const adapter = new PrismaBetterSqlite3({
