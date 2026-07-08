@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AdminNav({ role }: { role?: SessionRole }) {
   const pathname = usePathname();
-  if (pathname === "/admin/login") return null;
+  const isLoginPage = pathname === "/admin/login";
 
   return (
     <header className="border-b border-black/[.08] dark:border-white/[.145]">
@@ -22,18 +22,21 @@ export function AdminNav({ role }: { role?: SessionRole }) {
           OrderFlow Pizza · Admin
         </Link>
         <nav className="flex items-center gap-4 text-sm font-medium">
-          {role === "platform_admin" ? (
-            <>
-              <Link href="/admin/stores">매장 관리</Link>
-              <Link href="/admin/orders/search">주문 검색</Link>
-            </>
-          ) : (
-            <Link href="/admin/orders">주문 목록</Link>
-          )}
+          {!isLoginPage &&
+            (role === "platform_admin" ? (
+              <>
+                <Link href="/admin/stores">매장 관리</Link>
+                <Link href="/admin/orders/search">주문 검색</Link>
+              </>
+            ) : (
+              <Link href="/admin/orders">주문 목록</Link>
+            ))}
           <ThemeToggle />
-          <form action={logoutAction}>
-            <button type="submit">로그아웃</button>
-          </form>
+          {!isLoginPage && (
+            <form action={logoutAction}>
+              <button type="submit">로그아웃</button>
+            </form>
+          )}
         </nav>
       </div>
     </header>
