@@ -6,7 +6,6 @@ import { Navigation } from "lucide-react";
 import { StoresMapLazy } from "@/components/stores-map-lazy";
 import { fetchNearbyStores } from "@/lib/stores/actions";
 import { Spinner } from "@/components/spinner";
-import { InfoDialog } from "@/components/info-dialog";
 import { FALLBACK_LOCATION } from "@/lib/constants";
 import type { NearbyStore } from "@/lib/stores/queries";
 import type { FocusTarget } from "@/components/stores-map";
@@ -29,7 +28,6 @@ export function StoreLocator() {
     null
   );
   const [stores, setStores] = useState<NearbyStore[] | null>(null);
-  const [deniedNoticeDismissed, setDeniedNoticeDismissed] = useState(false);
   const [focusTarget, setFocusTarget] = useState<FocusTarget | null>(null);
 
   // Kicks off the actual permission prompt whenever status flips back to
@@ -92,15 +90,11 @@ export function StoreLocator() {
 
   return (
     <div className="flex flex-col gap-4">
-      {status === "denied" && !deniedNoticeDismissed && (
-        <InfoDialog
-          message="위치 서비스에 동의하지 않으면 위치 기반 서비스를 제공받을 수 없습니다."
-          onDismiss={() => setDeniedNoticeDismissed(true)}
-        />
-      )}
-      {(status === "unsupported" || status === "error") && (
+      {status !== "granted" && (
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          위치 정보를 가져올 수 없어 기본 위치를 기준으로 표시합니다.
+          {status === "denied"
+            ? "위치 권한이 없어 기본 위치를 기준으로 표시합니다."
+            : "위치 정보를 가져올 수 없어 기본 위치를 기준으로 표시합니다."}
         </p>
       )}
       <StoresMapLazy
