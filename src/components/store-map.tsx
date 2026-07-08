@@ -36,7 +36,7 @@ export function StoreMap({
     <MapContainer
       center={[latitude, longitude]}
       zoom={15}
-      scrollWheelZoom={false}
+      scrollWheelZoom={true}
       className={`${className} rounded-lg`}
     >
       <TileLayer

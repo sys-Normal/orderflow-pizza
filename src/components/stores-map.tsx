@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet";
 import L from "leaflet";
 import Link from "next/link";
@@ -110,22 +111,41 @@ function StoreMarker({ store }: { store: NearbyStore }) {
   );
 }
 
+export type FocusTarget = { latitude: number; longitude: number; nonce: number };
+
+// Lets code outside the map (the store list below it) command the map to
+// pan to a given point — e.g. clicking a list row's "이동" button. `nonce`
+// forces the effect to re-run even when the same store is targeted twice
+// in a row.
+function MapFocuser({ target }: { target: FocusTarget | null }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!target) return;
+    map.panTo([target.latitude, target.longitude], { animate: true });
+  }, [target, map]);
+
+  return null;
+}
+
 export function StoresMap({
   center,
   stores,
   radiusKm = 3,
+  focusTarget = null,
   className = "h-96 w-full",
 }: {
   center: { latitude: number; longitude: number };
   stores: NearbyStore[];
   radiusKm?: number;
+  focusTarget?: FocusTarget | null;
   className?: string;
 }) {
   return (
     <MapContainer
       center={[center.latitude, center.longitude]}
       zoom={14}
-      scrollWheelZoom={false}
+      scrollWheelZoom={true}
       className={`${className} rounded-lg`}
     >
       <TileLayer
@@ -141,6 +161,7 @@ export function StoresMap({
       {stores.map((store) => (
         <StoreMarker key={store.id} store={store} />
       ))}
+      <MapFocuser target={focusTarget} />
     </MapContainer>
   );
 }

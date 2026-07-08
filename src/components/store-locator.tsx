@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Navigation } from "lucide-react";
 import { StoresMapLazy } from "@/components/stores-map-lazy";
 import { fetchNearbyStores } from "@/lib/stores/actions";
 import { Spinner } from "@/components/spinner";
 import { InfoDialog } from "@/components/info-dialog";
 import { FALLBACK_LOCATION } from "@/lib/constants";
 import type { NearbyStore } from "@/lib/stores/queries";
+import type { FocusTarget } from "@/components/stores-map";
 
 type LocationStatus =
   | "requesting"
@@ -28,6 +30,7 @@ export function StoreLocator() {
   );
   const [stores, setStores] = useState<NearbyStore[] | null>(null);
   const [deniedNoticeDismissed, setDeniedNoticeDismissed] = useState(false);
+  const [focusTarget, setFocusTarget] = useState<FocusTarget | null>(null);
 
   // Kicks off the actual permission prompt whenever status flips back to
   // "requesting" (on mount every time this screen is opened).
@@ -103,6 +106,7 @@ export function StoreLocator() {
       <StoresMapLazy
         center={effectiveCoords}
         stores={stores ?? []}
+        focusTarget={focusTarget}
         className="h-96 w-full"
       />
       {stores === null ? (
@@ -130,12 +134,28 @@ export function StoreLocator() {
                     {store.phone} · {store.distanceKm.toFixed(1)}km
                   </p>
                 </div>
-                <Link
-                  href={`/menu?storeId=${store.id}`}
-                  className="shrink-0 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                >
-                  주문하기
-                </Link>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFocusTarget({
+                        latitude: store.latitude,
+                        longitude: store.longitude,
+                        nonce: Date.now(),
+                      })
+                    }
+                    aria-label={`${store.name} 위치로 지도 이동`}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-black/[.08] text-zinc-600 hover:border-primary hover:text-primary dark:border-white/[.145] dark:text-zinc-400"
+                  >
+                    <Navigation className="h-4 w-4" />
+                  </button>
+                  <Link
+                    href={`/menu?storeId=${store.id}`}
+                    className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                  >
+                    주문하기
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
