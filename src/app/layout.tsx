@@ -32,7 +32,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "OrderFlow Pizza",
-  description: "비회원 주문이 가능한 피자 주문 플랫폼",
+  description: "매장을 찾아 메뉴를 둘러보고, 주문 시 로그인하는 피자 주문 플랫폼",
 };
 
 export default function RootLayout({

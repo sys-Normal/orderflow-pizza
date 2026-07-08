@@ -7,7 +7,7 @@ export default function Home() {
         OrderFlow Pizza
       </h1>
       <p className="max-w-md text-lg text-zinc-600 dark:text-zinc-400">
-        비회원으로 바로 주문할 수 있는 피자 주문 플랫폼입니다.
+        매장 탐색과 장바구니는 자유롭게, 주문할 때만 로그인하면 되는 피자 주문 플랫폼입니다.
       </p>
       <div className="flex gap-4">
         <Link
