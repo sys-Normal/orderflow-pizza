@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, Pizza, ShoppingCart } from "lucide-react";
+import { Pizza, ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/cart/cart-context";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -19,9 +19,6 @@ export function SiteHeader() {
           OrderFlow Pizza
         </Link>
         <nav className="flex items-center gap-4 text-sm font-medium">
-          <Link href="/stores" aria-label="매장">
-            <MapPin className="h-6 w-6" />
-          </Link>
           <Link
             href="/cart"
             aria-label={`장바구니, ${itemCount}개 항목`}
