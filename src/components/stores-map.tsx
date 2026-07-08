@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Phone } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 import type { NearbyStore } from "@/lib/stores/queries";
+import { useToast } from "@/lib/toast/toast-context";
 
 // Must match the popupAnchor y-offset below — used again when centering the
 // popup itself (see StoreMarker's popupopen handler).
@@ -38,6 +39,14 @@ const userMarkerIcon = L.divIcon({
 
 function StoreMarker({ store }: { store: NearbyStore }) {
   const map = useMap();
+  const { showToast } = useToast();
+
+  function handleCopyPhone() {
+    navigator.clipboard
+      .writeText(store.phone)
+      .then(() => showToast("전화번호가 복사되었습니다"))
+      .catch(() => showToast("복사에 실패했습니다"));
+  }
 
   return (
     <Marker
@@ -80,10 +89,15 @@ function StoreMarker({ store }: { store: NearbyStore }) {
       <Popup minWidth={200} autoPan={false}>
         <div className="flex flex-col gap-2">
           <p className="text-base font-semibold leading-snug">{store.name}</p>
-          <p className="flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-400">
+          <button
+            type="button"
+            onClick={handleCopyPhone}
+            aria-label={`전화번호 복사: ${store.phone}`}
+            className="flex items-center gap-1.5 text-left text-sm text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
+          >
             <Phone className="h-3.5 w-3.5 shrink-0" />
             {store.phone}
-          </p>
+          </button>
           <Link
             href={`/menu?storeId=${store.id}`}
             className="mt-1 block rounded-full bg-primary px-3 py-1.5 text-center text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
