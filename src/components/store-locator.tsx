@@ -138,11 +138,7 @@ export function StoreLocator() {
                   <button
                     type="button"
                     onClick={() =>
-                      setFocusTarget({
-                        latitude: store.latitude,
-                        longitude: store.longitude,
-                        nonce: Date.now(),
-                      })
+                      setFocusTarget({ storeId: store.id, nonce: Date.now() })
                     }
                     aria-label={`${store.name} 위치로 지도 이동`}
                     className="flex h-9 w-9 items-center justify-center rounded-full border border-black/[.08] text-zinc-600 hover:border-primary hover:text-primary dark:border-white/[.145] dark:text-zinc-400"

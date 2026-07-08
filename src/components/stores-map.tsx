@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet";
 import L from "leaflet";
 import Link from "next/link";
@@ -38,7 +38,13 @@ const userMarkerIcon = L.divIcon({
   iconAnchor: [10, 10],
 });
 
-function StoreMarker({ store }: { store: NearbyStore }) {
+function StoreMarker({
+  store,
+  markerRef,
+}: {
+  store: NearbyStore;
+  markerRef: (id: string, instance: L.Marker | null) => void;
+}) {
   const map = useMap();
   const { showToast } = useToast();
 
@@ -51,6 +57,7 @@ function StoreMarker({ store }: { store: NearbyStore }) {
 
   return (
     <Marker
+      ref={(instance) => markerRef(store.id, instance)}
       position={[store.latitude, store.longitude]}
       icon={storeMarkerIcon}
       eventHandlers={{
@@ -111,19 +118,25 @@ function StoreMarker({ store }: { store: NearbyStore }) {
   );
 }
 
-export type FocusTarget = { latitude: number; longitude: number; nonce: number };
+export type FocusTarget = { storeId: string; nonce: number };
 
-// Lets code outside the map (the store list below it) command the map to
-// pan to a given point — e.g. clicking a list row's "이동" button. `nonce`
-// forces the effect to re-run even when the same store is targeted twice
-// in a row.
-function MapFocuser({ target }: { target: FocusTarget | null }) {
-  const map = useMap();
-
+// Lets code outside the map (the store list below it) command a marker to
+// open its popup — e.g. clicking a list row's "이동" button. Opening the
+// popup this way fires the exact same 'popupopen' handler as a real marker
+// click, so the two are indistinguishable (same centering, same popup).
+// `nonce` forces the effect to re-run even when the same store is targeted
+// twice in a row.
+function MapFocuser({
+  target,
+  markersRef,
+}: {
+  target: FocusTarget | null;
+  markersRef: React.RefObject<Map<string, L.Marker>>;
+}) {
   useEffect(() => {
     if (!target) return;
-    map.panTo([target.latitude, target.longitude], { animate: true });
-  }, [target, map]);
+    markersRef.current.get(target.storeId)?.openPopup();
+  }, [target, markersRef]);
 
   return null;
 }
@@ -141,6 +154,8 @@ export function StoresMap({
   focusTarget?: FocusTarget | null;
   className?: string;
 }) {
+  const markersRef = useRef(new Map<string, L.Marker>());
+
   return (
     <MapContainer
       center={[center.latitude, center.longitude]}
@@ -159,9 +174,16 @@ export function StoresMap({
       />
       <Marker position={[center.latitude, center.longitude]} icon={userMarkerIcon} />
       {stores.map((store) => (
-        <StoreMarker key={store.id} store={store} />
+        <StoreMarker
+          key={store.id}
+          store={store}
+          markerRef={(id, instance) => {
+            if (instance) markersRef.current.set(id, instance);
+            else markersRef.current.delete(id);
+          }}
+        />
       ))}
-      <MapFocuser target={focusTarget} />
+      <MapFocuser target={focusTarget} markersRef={markersRef} />
     </MapContainer>
   );
 }
