@@ -75,5 +75,7 @@ export async function buyerSignupAction(
 export async function buyerLogoutAction() {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE);
+  // Same target as the header logo — "/" is the one place every flow
+  // (buyer/seller/admin) can always get back to.
   redirect("/");
 }

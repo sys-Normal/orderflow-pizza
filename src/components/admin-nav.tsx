@@ -15,7 +15,7 @@ export function AdminNav({ role }: { role?: SessionRole }) {
     <header className="border-b border-black/[.08] dark:border-white/[.145]">
       <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-6 py-4">
         <Link
-          href={role === "platform_admin" ? "/admin/stores" : "/admin/orders"}
+          href="/"
           className="flex items-center gap-2 text-lg font-semibold tracking-tight"
         >
           <Pizza className="h-6 w-6 text-primary" />
