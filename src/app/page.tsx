@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { Pizza } from "lucide-react";
 
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
-      <h1 className="text-3xl font-semibold tracking-tight">
+      <h1 className="flex items-center gap-2 text-3xl font-semibold tracking-tight">
+        <Pizza className="h-8 w-8 text-primary" />
         OrderFlow Pizza
       </h1>
       <p className="max-w-md text-lg text-zinc-600 dark:text-zinc-400">
