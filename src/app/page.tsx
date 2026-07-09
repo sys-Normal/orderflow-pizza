@@ -13,10 +13,7 @@ const FLOW_STEPS = [
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
-      <h1 className="flex items-center gap-2 text-3xl font-semibold tracking-tight">
-        <Pizza className="h-8 w-8 text-primary" />
-        OrderFlow Pizza
-      </h1>
+      <h1 className="text-3xl font-semibold tracking-tight">OrderFlow Pizza</h1>
       <div className="flex items-center gap-3" aria-hidden="true">
         {FLOW_STEPS.map(({ Icon, name }, index) => (
           <Fragment key={name}>
