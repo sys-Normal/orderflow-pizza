@@ -8,7 +8,8 @@
 - 구매자 로그인/회원가입: `/login`, `/signup` (`src/lib/auth/buyer-actions.ts`) — 이메일/비밀번호 또는 구글 소셜 로그인 중 선택 가능합니다. 구글 로그인은 별도 인증 라이브러리(next-auth 등) 없이 OAuth 2.0 Authorization Code Flow를 직접 구현했습니다 (`src/lib/auth/google-oauth.ts`, `/api/auth/google`, `/api/auth/google/callback`). id_token JWT의 서명을 직접 검증하는 대신 액세스 토큰으로 구글 userinfo 엔드포인트를 호출해 프로필을 받아오는 방식으로 단순화했습니다. `User.passwordHash`는 구글 전용 계정(비밀번호 없음)을 위해 nullable이고, `googleId` 컬럼으로 계정을 매칭/연결합니다.
 - 세션: 로그인 성공 시 Server Action이 `session` 쿠키(HttpOnly)를 발급합니다. 값은 `userId.role.만료시각.서명` 형태로 서버 비밀키(`SESSION_SECRET`)로 HMAC 서명되어 위조/변조를 막습니다 (`src/lib/auth/session.ts`). 구매자 로그인을 추가하면서 기존 seller/platform_admin 전용이던 세션 체계를 그대로 확장해 `buyer` 역할을 포함시켰습니다 — 새 라이브러리나 별도 세션 저장소 없이. 실제 서비스에서는 세션 폐기(로그아웃 전 목록 무효화)까지 지원하는 세션 저장소나 JWT 라이브러리로 확장할 수 있습니다.
 - 라우트 보호: `src/proxy.ts`가 `/admin/*`와 `/checkout/*`를 가로챕니다. `/admin/*`는 세션이 없거나 `buyer` 역할이면(관리자 세션이 아니면) `/admin/login`으로, `/admin/stores`는 `platform_admin`이 아니면 `/admin/orders`로 리다이렉트합니다. `/checkout`은 `buyer` 세션이 없으면 `/login?next=<원래 경로>`로 리다이렉트해 로그인/회원가입 후 원래 있던 곳으로 돌아오게 합니다 (`src/lib/auth/safe-next.ts`가 오픈 리다이렉트 방지를 위해 앱 내부 상대 경로만 허용). Server Action은 라우트 매처와 별개로 직접 호출될 수 있어, 상태 변경 액션(`createOrder`, `updateOrderStatus`, `updateStoreStatus`)도 각각 필요한 역할(buyer / seller·platform_admin)을 내부에서 한 번 더 명시적으로 검증합니다.
-- 네비게이션: 헤더 로고는 구매자·관리자 화면 어디서든 `/`로 이동합니다 — 처음엔 구매자는 `/stores`, 관리자는 역할별 첫 화면으로 보냈는데, 그러면 한 번 `/`에서 갈라진 뒤 다시 루트로 돌아올 방법이 없어져서 로고 본연의 "홈으로" 관례를 따르도록 되돌렸습니다. 로그인 전에는 헤더에 로그인 아이콘이, 로그인 후에는 이메일 첫 글자로 된 원형 배지(hover 시 전체 이메일 표시) + 로그아웃이 표시됩니다 (`src/components/site-header.tsx`).
+- 네비게이션: 헤더 로고는 구매자·관리자 화면 어디서든 `/`로 이동합니다 — 처음엔 구매자는 `/stores`, 관리자는 역할별 첫 화면으로 보냈는데, 그러면 한 번 `/`에서 갈라진 뒤 다시 루트로 돌아올 방법이 없어져서 로고 본연의 "홈으로" 관례를 따르도록 되돌렸습니다. `/admin/login`에도 같은 헤더가 뜨지만 로그인 전이라 의미 없는 매장 관리/로그아웃 항목은 숨깁니다 (`src/components/admin-nav.tsx`). 로그인 전에는 헤더에 로그인 아이콘이, 로그인 후에는 이메일 첫 글자로 된 원형 배지(hover 시 전체 이메일 표시) + 로그아웃이 표시됩니다 (`src/components/site-header.tsx`).
+- 루트 페이지(`/`)의 주 CTA는 `매장찾기` 하나뿐입니다. `판매자·관리자 로그인`은 하단의 작은 보조 링크로 뒀습니다 — 실제 배포 시 구매자 대상 랜딩에 "관리자 로그인" 버튼이 매장찾기와 동급으로 노출될 이유가 없고, 판매자도 이 문을 같이 쓰는데 라벨이 "관리자"만으로는 부정확했기 때문입니다. 로그인 페이지 자체(`/admin/login`)를 나누지 않은 이유는, 로그인 폼이 이미 이메일/비밀번호로 동일해서(`src/components/login-form.tsx`) 역할은 로그인 성공 후 DB에서 읽어 자동으로 갈리고, 진짜 분기가 필요해지는 지점은 로그인이 아니라 "회원가입"(판매자 셀프 가입 vs 관리자 초대 전용)이라고 판단해서입니다.
 - 주문/메뉴 데이터: Prisma + SQLite로 저장됩니다 (`prisma/schema.prisma`). 시드 스크립트(`prisma/seed.ts`)가 초기 매장·메뉴·계정(판매자/관리자/구매자 각 1개씩) 데이터를 채웁니다.
 
 **역할별 권한**
@@ -42,6 +43,12 @@
 
 장바구니는 한 번에 한 매장의 메뉴만 담을 수 있습니다 (`src/lib/cart/cart-context.tsx`) — 주문은 `storeId` 하나로만 생성되기 때문입니다. 이미 담긴 것과 다른 매장의 메뉴를 담으려 하면 기존 장바구니를 비우고 교체할지 확인하는 다이얼로그가 뜹니다 (`src/components/confirm-dialog.tsx`).
 
+저장 방식은 로그인 여부에 따라 다릅니다:
+
+- **게스트**: 기존대로 `localStorage`만 사용하는 클라이언트 전용 상태입니다 (`src/lib/create-local-store.ts`).
+- **로그인한 구매자**: 같은 `localStorage` 캐시를 쓰되, 변경될 때마다 debounce로 DB `Cart` 테이블(`userId` 당 한 행, `itemsJson`)에도 저장합니다 (`src/lib/cart/persistence.ts`의 `getCartForUser`, `src/lib/cart/actions.ts`의 `saveCart`) — 다른 기기·세션에서 로그인해도 장바구니가 이어집니다. 규칙: 로그인 시 **서버에 저장된 장바구니가 우선**(서버가 비어 있을 때만 로컬에 있던 걸 서버로 승격), 로그아웃 시 **이 기기의 로컬만 비움**(서버 쪽은 보존 → 재로그인하면 복원). 로그아웃 후 같은 기기를 다른 사람이 게스트로 써도 이전 계정 장바구니를 이어받지 않도록 `orderflow_cart_owned` 플래그로 소유 여부를 구분합니다.
+- 로그인 리다이렉트(`/login` → `next` 경로)가 `(customer)` 레이아웃 밖으로 나가지 않아 `CartProvider`가 리마운트되지 않는다는 점 때문에, 병합 로직은 마운트 시점이 아니라 로그인 상태의 **전환**(guest→buyer, buyer→guest)에 반응하도록 만들었습니다 — 마운트 1회로만 처리하면 로그인 직후 아직 비어 있는 로컬 장바구니가 서버 장바구니를 덮어써 버리는 문제가 있었습니다.
+
 ## 메뉴 구성
 
 `MenuItem`에 `category`(`pizza`/`chicken`/`side`/`drink`) enum을 두고, 메뉴 화면에서 카테고리별로 섹션을 나눠 보여줍니다. 각 섹션은 기본 펼침 상태이며 제목을 클릭하면 접고 펼 수 있습니다 (`src/components/menu-category-section.tsx`). 카테고리별 최소 4개씩 시드되어 있습니다 (`prisma/seed.ts`).
@@ -51,6 +58,7 @@
 - **다크/라이트 테마**: 기본값은 시스템 설정(`prefers-color-scheme`)을 따르고, 우측 상단 스위치로 수동 전환하면 그 이후로는 선택값이 `localStorage`에 저장되어 고정됩니다 (`src/lib/theme/theme.ts`). 다크모드 배경/서페이스 색상은 Material Design 다크 테마 규격(`#121212`, elevation에 따른 표면 색)을, 브랜드 컬러는 Google Blue 계열(라이트 `#1a73e8` / 다크 `#8ab4f8`)을 사용합니다. Tailwind의 `dark:` variant는 미디어 쿼리 대신 `.dark` 클래스 기준으로 동작하도록 커스터마이즈했습니다 (`@custom-variant dark`, `src/app/globals.css`). 테마 전환 시 깜빡임(FOUC)을 막기 위해 `<head>`에 직접 렌더링되는 블로킹 스크립트가 있습니다 (`src/app/layout.tsx`) — 처음엔 `next/script`(`beforeInteractive`)로 만들었는데, React가 SSR 시 넣어준 위치와 실제 호이스팅되는 `<head>` 위치가 달라 불필요한 하이드레이션 위험이 있어 순수 `<script dangerouslySetInnerHTML>`로 바꿨습니다.
 - **토스트 알림**: 장바구니 담기/삭제, 전화번호 복사 등에서 화면 하단에 잠깐 뜨는 알림입니다. 새 라이브러리 없이 순수 React context + CSS transition으로 구현했습니다 (`src/lib/toast/toast-context.tsx`).
 - **전체 화면 로딩**: 상태 변경처럼 서버에 반영되기까지 시간이 걸리는 작업에 반투명 배경 + 스피너를 띄웁니다 (`src/components/full-screen-loading.tsx`, `src/components/spinner.tsx`). 지금은 주문/매장 상태 변경 버튼에 연결되어 있습니다.
+- **클릭 가능 요소 커서**: Tailwind v4가 `<button>`의 `cursor: pointer` 기본값을 없애서, `button`(비활성 제외)/`[role="button"]`/`label[for]`/`summary`에 포인터 커서를 되살리는 전역 규칙을 뒀습니다 (`src/app/globals.css`). `<div>` 등 버튼이 아닌 요소에 `onClick`을 달 때는 `cursor-pointer`를 직접 붙여야 합니다.
 
 ## 사용 라이브러리
 
