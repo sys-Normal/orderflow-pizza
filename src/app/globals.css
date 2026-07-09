@@ -50,6 +50,34 @@ summary {
   cursor: pointer;
 }
 
+/* Landing hero flow strip: a bright highlight sweeps left→right across the
+   step icons (매장 탐색 → 장바구니 → 로그인 → 주문), staggered by delay.
+   Only opacity/transform animate, so it's GPU-composited and cheap even on
+   an infinite loop. Icons rest dim and stay meaningful when motion is off. */
+@keyframes flow-step {
+  0%,
+  45%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0) scale(1);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.18);
+  }
+}
+.flow-icon {
+  display: inline-flex;
+  color: var(--primary);
+  animation: flow-step 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-icon {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 /* Leaflet marker popups ("말풍선") default to a plain white bubble with its
    own font stack, which clashes with the app's card styling and dark mode.
    Re-skin them to match (surface color, border, radius, font) instead.
