@@ -11,20 +11,18 @@ export default function Home() {
       <p className="max-w-md text-lg text-zinc-600 dark:text-zinc-400">
         매장 탐색과 장바구니는 자유롭게, 주문할 때만 로그인하면 되는 피자 주문 플랫폼입니다.
       </p>
-      <div className="flex gap-4">
-        <Link
-          href="/stores"
-          className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          매장찾기
-        </Link>
-        <Link
-          href="/admin/login"
-          className="rounded-full border border-black/[.08] px-5 py-2 text-sm font-medium dark:border-white/[.145]"
-        >
-          관리자 로그인
-        </Link>
-      </div>
+      <Link
+        href="/stores"
+        className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+      >
+        매장찾기
+      </Link>
+      <Link
+        href="/admin/login"
+        className="text-sm text-zinc-500 hover:underline dark:text-zinc-400"
+      >
+        판매자·관리자 로그인
+      </Link>
     </div>
   );
 }
