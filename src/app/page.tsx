@@ -34,7 +34,7 @@ export default function Home() {
       </p>
       <Link
         href="/stores"
-        className="relative overflow-hidden rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-shadow duration-200 hover:shadow-md before:pointer-events-none before:absolute before:inset-0 before:bg-white before:opacity-0 before:transition-opacity before:duration-200 before:content-[''] hover:before:opacity-[0.12] active:before:opacity-20"
+        className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors duration-200 hover:bg-[color-mix(in_oklab,var(--primary),black_14%)] active:bg-[color-mix(in_oklab,var(--primary),black_24%)]"
       >
         매장찾기
       </Link>
