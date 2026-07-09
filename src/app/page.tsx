@@ -34,7 +34,7 @@ export default function Home() {
       </p>
       <Link
         href="/stores"
-        className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        className="relative overflow-hidden rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-shadow duration-200 hover:shadow-md before:pointer-events-none before:absolute before:inset-0 before:bg-white before:opacity-0 before:transition-opacity before:duration-200 before:content-[''] hover:before:opacity-[0.12] active:before:opacity-20"
       >
         매장찾기
       </Link>
