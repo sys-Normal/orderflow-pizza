@@ -53,6 +53,17 @@ model User {
 
   stores Store[]
   orders Order[]
+  cart   Cart?
+}
+
+// Per-buyer saved cart so a logged-in account keeps its cart across
+// sessions/devices. Items are stored as a JSON string (SQLite has no native
+// JSON type via Prisma) mirroring the localStorage CartItem[] shape.
+model Cart {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id])
+  itemsJson String
+  updatedAt DateTime @updatedAt
 }
 
 model Store {

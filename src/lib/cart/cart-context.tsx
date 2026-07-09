@@ -4,16 +4,40 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { createLocalStore } from "@/lib/create-local-store";
 import type { CartItem } from "@/lib/cart/types";
+import { saveCart } from "@/lib/cart/actions";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 const store = createLocalStore<CartItem[]>("orderflow_cart", []);
+
+// Marks whether the current local cart belongs to a logged-in account, so a
+// guest visiting this device after logout doesn't inherit that account's cart.
+const OWNED_KEY = "orderflow_cart_owned";
+function markOwned() {
+  try {
+    window.localStorage.setItem(OWNED_KEY, "1");
+  } catch {}
+}
+function wasOwned(): boolean {
+  try {
+    return window.localStorage.getItem(OWNED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+function clearOwned() {
+  try {
+    window.localStorage.removeItem(OWNED_KEY);
+  } catch {}
+}
 
 type CartContextValue = {
   items: CartItem[];
@@ -75,13 +99,60 @@ function clearCart() {
   store.write([]);
 }
 
-export function CartProvider({ children }: { children: ReactNode }) {
+export function CartProvider({
+  children,
+  isLoggedIn = false,
+  initialServerCart = [],
+}: {
+  children: ReactNode;
+  isLoggedIn?: boolean;
+  initialServerCart?: CartItem[];
+}) {
   const items = useSyncExternalStore(
     store.subscribe,
     store.getSnapshot,
     store.getServerSnapshot
   );
   const [pendingItem, setPendingItem] = useState<CartItem | null>(null);
+
+  // Reconcile the local (guest) cart with the account's saved cart whenever
+  // the auth state settles. This must react to isLoggedIn *transitions*, not
+  // just mount: logging in redirects within the same customer layout, so
+  // CartProvider stays mounted and only its props change. Rules the user chose:
+  // - logging in + server cart exists → server wins (resume across devices)
+  // - logging in + server empty       → promote whatever was in the local cart
+  // - guest after a prior logout      → clear this device's cart
+  const prevLoggedIn = useRef<boolean | null>(null);
+  useEffect(() => {
+    const was = prevLoggedIn.current;
+    prevLoggedIn.current = isLoggedIn;
+
+    if (isLoggedIn) {
+      if (was === true) return; // already reconciled while logged in
+      if (initialServerCart.length > 0) {
+        store.write(initialServerCart);
+      } else if (store.read().length > 0) {
+        void saveCart(store.read()).catch(() => {});
+      }
+      markOwned();
+    } else if (was === true || wasOwned()) {
+      store.write([]);
+      clearOwned();
+    }
+    // initialServerCart is read only at the moment we transition into the
+    // logged-in state, so it's intentionally not a dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn]);
+
+  // Persist to the account on every change while logged in (debounced so
+  // rapid quantity edits don't each hit the DB).
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const timer = setTimeout(() => {
+      void saveCart(items).catch(() => {});
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [items, isLoggedIn]);
 
   // A cart can only hold items from one store at a time, since an order is
   // placed against a single storeId. Adding from a different store asks the
