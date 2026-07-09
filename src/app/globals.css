@@ -39,6 +39,17 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Tailwind v4 dropped the `cursor: pointer` default on <button> (it now
+   inherits `default`). Restore the pointer for interactive elements so
+   anything clickable actually looks clickable. onClick on non-button
+   elements (e.g. a <div>) still needs an explicit `cursor-pointer`. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+label[for],
+summary {
+  cursor: pointer;
+}
+
 /* Leaflet marker popups ("말풍선") default to a plain white bubble with its
    own font stack, which clashes with the app's card styling and dark mode.
    Re-skin them to match (surface color, border, radius, font) instead.
