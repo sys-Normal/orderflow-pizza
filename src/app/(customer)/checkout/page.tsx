@@ -57,10 +57,10 @@ export default function CheckoutPage() {
           장바구니가 비어 있어 주문할 수 없습니다.
         </p>
         <Link
-          href="/menu"
+          href="/stores"
           className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground"
         >
-          메뉴 보러가기
+          매장 보러가기
         </Link>
       </div>
     );
