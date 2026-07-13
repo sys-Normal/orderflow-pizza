@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { CartProvider } from "@/lib/cart/cart-context";
 import { SiteHeader } from "@/components/site-header";
+import { CartFloatingBar } from "@/components/cart-floating-bar";
 import { getSessionUser } from "@/lib/auth/current-user";
 import { getCartForUser } from "@/lib/cart/persistence";
 import { prisma } from "@/lib/db";
@@ -24,6 +25,7 @@ export default async function CustomerLayout({ children }: { children: ReactNode
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-8">
         {children}
       </main>
+      <CartFloatingBar />
     </CartProvider>
   );
 }
