@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Store } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getMenu } from "@/lib/menu/queries";
 import { getPrimaryStore, getStoreById } from "@/lib/stores/queries";
@@ -22,18 +22,26 @@ export default async function MenuPage({
   const items = await getMenu(store.id);
 
   return (
-    <div className="flex flex-col gap-10">
-      <div>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <Link
           href="/stores"
-          className="mb-3 inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-primary dark:text-zinc-400"
+          className="inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-primary dark:text-zinc-400"
         >
           <ArrowLeft className="h-4 w-4" />
           매장 목록
         </Link>
-        <p className="text-sm font-medium text-primary">현재 매장</p>
-        <h1 className="text-3xl font-bold tracking-tight">{store.name}</h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">메뉴</p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Store className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="truncate text-lg font-semibold tracking-tight">
+              {store.name}
+            </h1>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">메뉴</p>
+          </div>
+        </div>
         {store.description && (
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             {store.description}
@@ -41,19 +49,21 @@ export default async function MenuPage({
         )}
       </div>
 
-      {MENU_CATEGORY_ORDER.map((category) => {
-        const categoryItems = items.filter((item) => item.category === category);
-        if (categoryItems.length === 0) return null;
-        return (
-          <MenuCategorySection
-            key={category}
-            title={MENU_CATEGORY_LABELS[category]}
-            items={categoryItems}
-            storeId={store.id}
-            storeName={store.name}
-          />
-        );
-      })}
+      <div className="flex flex-col gap-10">
+        {MENU_CATEGORY_ORDER.map((category) => {
+          const categoryItems = items.filter((item) => item.category === category);
+          if (categoryItems.length === 0) return null;
+          return (
+            <MenuCategorySection
+              key={category}
+              title={MENU_CATEGORY_LABELS[category]}
+              items={categoryItems}
+              storeId={store.id}
+              storeName={store.name}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
