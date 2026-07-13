@@ -70,12 +70,15 @@
 
 `MenuItem`에 `category`(`pizza`/`chicken`/`side`/`drink`) enum을 두고, 메뉴 화면에서 카테고리별로 섹션을 나눠 보여줍니다. 각 섹션은 기본 펼침 상태이며 제목을 클릭하면 접고 펼 수 있습니다 (`src/components/menu-category-section.tsx`). 카테고리별 최소 4개씩 시드되어 있습니다 (`prisma/seed.ts`).
 
+메뉴 화면(`/menu`) 상단에는 매장 목록(`/stores`)으로 돌아가는 링크와, 원형 아이콘 배지(매장 아이콘) + 매장명 + "메뉴" 부제 2줄로 구성된 헤더가 있습니다 (`src/app/(customer)/menu/page.tsx`). 매장이 여러 곳일 수 있는 구조라 지금 보고 있는 게 어느 매장 메뉴인지 명확히 드러나야 했고, 텍스트 크기만으로 강조하거나 구분선·브레드크럼(`/`)으로 구분하는 방식은 화면이 좁아지거나 시각적으로 어수선해지는 문제가 있어 최종적으로 장바구니 뱃지·로그인 아바타 등 앱 전반에서 쓰는 원형 배지 톤에 맞춘 형태로 정리했습니다.
+
 ## UI 공통 요소
 
 - **다크/라이트 테마**: 기본값은 시스템 설정(`prefers-color-scheme`)을 따르고, 우측 상단 스위치로 수동 전환하면 그 이후로는 선택값이 `localStorage`에 저장되어 고정됩니다 (`src/lib/theme/theme.ts`). 다크모드 배경/서페이스 색상은 Material Design 다크 테마 규격(`#121212`, elevation에 따른 표면 색)을, 브랜드 컬러는 Google Blue 계열(라이트 `#1a73e8` / 다크 `#8ab4f8`)을 사용합니다. Tailwind의 `dark:` variant는 미디어 쿼리 대신 `.dark` 클래스 기준으로 동작하도록 커스터마이즈했습니다 (`@custom-variant dark`, `src/app/globals.css`). 테마 전환 시 깜빡임(FOUC)을 막기 위해 `<head>`에 직접 렌더링되는 블로킹 스크립트가 있습니다 (`src/app/layout.tsx`) — 처음엔 `next/script`(`beforeInteractive`)로 만들었는데, React가 SSR 시 넣어준 위치와 실제 호이스팅되는 `<head>` 위치가 달라 불필요한 하이드레이션 위험이 있어 순수 `<script dangerouslySetInnerHTML>`로 바꿨습니다.
 - **토스트 알림**: 장바구니 담기/삭제, 전화번호 복사 등에서 화면 하단에 잠깐 뜨는 알림입니다. 새 라이브러리 없이 순수 React context + CSS transition으로 구현했습니다 (`src/lib/toast/toast-context.tsx`).
 - **전체 화면 로딩**: 상태 변경처럼 서버에 반영되기까지 시간이 걸리는 작업에 반투명 배경 + 스피너를 띄웁니다 (`src/components/full-screen-loading.tsx`, `src/components/spinner.tsx`). 지금은 주문/매장 상태 변경 버튼에 연결되어 있습니다.
 - **클릭 가능 요소 커서**: Tailwind v4가 `<button>`의 `cursor: pointer` 기본값을 없애서, `button`(비활성 제외)/`[role="button"]`/`label[for]`/`summary`에 포인터 커서를 되살리는 전역 규칙을 뒀습니다 (`src/app/globals.css`). `<div>` 등 버튼이 아닌 요소에 `onClick`을 달 때는 `cursor-pointer`를 직접 붙여야 합니다.
+- **스크롤바 스타일**: OS 기본 스크롤바가 카드/보더 톤(`border-black/[.08]`, dark:`border-white/[.145]`)과 어울리지 않아, 얇고 둥근 형태로 라이트/다크 모두 재스킨했습니다 (`scrollbar-width`/`scrollbar-color` + `::-webkit-scrollbar` 계열, `src/app/globals.css`). 다크 모드 클래스(`.dark`)가 `<html>` 자신에 붙는 구조라 `.dark *`(자손 선택자)만으로는 페이지 자체 스크롤바에 다크 색상이 적용되지 않는 문제가 있어, `.dark, .dark *` 형태로 자기 자신도 함께 선택하도록 처리했습니다.
 
 ## 사용 라이브러리
 
