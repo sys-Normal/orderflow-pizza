@@ -65,6 +65,7 @@
 - **로그인한 구매자**: 같은 `localStorage` 캐시를 쓰되, 변경될 때마다 debounce로 DB `Cart` 테이블(`userId` 당 한 행, `itemsJson`)에도 저장합니다 (`src/lib/cart/persistence.ts`의 `getCartForUser`, `src/lib/cart/actions.ts`의 `saveCart`) — 다른 기기·세션에서 로그인해도 장바구니가 이어집니다. 규칙: 로그인 시 **서버에 저장된 장바구니가 우선**(서버가 비어 있을 때만 로컬에 있던 걸 서버로 승격), 로그아웃 시 **이 기기의 로컬만 비움**(서버 쪽은 보존 → 재로그인하면 복원). 로그아웃 후 같은 기기를 다른 사람이 게스트로 써도 이전 계정 장바구니를 이어받지 않도록 `orderflow_cart_owned` 플래그로 소유 여부를 구분합니다.
 - 로그인 리다이렉트(`/login` → `next` 경로)가 `(customer)` 레이아웃 밖으로 나가지 않아 `CartProvider`가 리마운트되지 않는다는 점 때문에, 병합 로직은 마운트 시점이 아니라 로그인 상태의 **전환**(guest→buyer, buyer→guest)에 반응하도록 만들었습니다 — 마운트 1회로만 처리하면 로그인 직후 아직 비어 있는 로컬 장바구니가 서버 장바구니를 덮어써 버리는 문제가 있었습니다.
 - 빈 장바구니 화면(`/cart`, `/checkout`)의 CTA는 `/stores`(매장 목록)로 연결됩니다 — 장바구니가 매장 구분 없는 계정 공용 자원이라 "이전에 보던 매장 메뉴"라는 개념이 없고, 매장이 여러 곳일 수 있으니 특정 매장으로 조용히 보내기보다 매장을 다시 고르게 하는 편이 맞다고 판단했습니다.
+- `CartItem`에 `category`를 저장해서, 장바구니/체크아웃 목록(`src/components/cart-summary.tsx`)은 피자만 "(사이즈)"를 표시하고 치킨/사이드/음료는 표시하지 않습니다 — 이 카테고리들은 사이즈 선택 UI 자체가 없어져서(항상 M 고정) 사이즈를 같이 보여줄 이유가 없어졌기 때문입니다. 장바구니에서 사이즈를 바꾸는 기능은 추가하지 않았습니다(애초에 사이즈 선택을 없앤 결정과 방향이 맞지 않아서). `CartSummary`는 주문 확인(`/confirmation/[orderId]`)·관리자 주문 상세 화면과도 공유되는데, 그쪽은 `OrderItem` 기반이라 `category` 정보가 없어 `category`가 없으면 기존처럼 사이즈를 계속 보여줍니다 — 이 수정 이전에 담긴 장바구니 항목도 같은 이유로 사이즈가 그대로 보입니다.
 
 ## 메뉴 구성
 
@@ -72,9 +73,11 @@
 
 메뉴 화면(`/menu`) 상단에는 매장 목록(`/stores`)으로 돌아가는 링크와, 원형 아이콘 배지(매장 아이콘) + 매장명 + "메뉴" 부제 2줄로 구성된 헤더가 있습니다 (`src/app/(customer)/menu/page.tsx`). 매장이 여러 곳일 수 있는 구조라 지금 보고 있는 게 어느 매장 메뉴인지 명확히 드러나야 했고, 텍스트 크기만으로 강조하거나 구분선·브레드크럼(`/`)으로 구분하는 방식은 화면이 좁아지거나 시각적으로 어수선해지는 문제가 있어 최종적으로 장바구니 뱃지·로그인 아바타 등 앱 전반에서 쓰는 원형 배지 톤에 맞춘 형태로 정리했습니다.
 
-**피자 카드 + 상세보기 모달**: 피자 카테고리는 다른 카테고리와 달리 사진(정사각형) + 이름 + 짧은 설명 + "자세히 보기" 버튼만 카드에 두고 (`src/components/pizza-menu-card.tsx`), 재료 목록·사이즈 선택·실시간 가격·장바구니 담기는 모달로 분리했습니다 (`src/components/pizza-detail-modal.tsx`). 재료 목록은 `description` 필드(예: "토마토 소스, 모차렐라, 바질")를 콤마로 파싱해 만들어서 별도 스키마 필드 없이 성분표처럼 보여줍니다. 치킨/사이드/음료는 사이즈를 구분할 실익이 적어 기존처럼 카드에서 바로 담는 방식(`src/components/pizza-card.tsx`)을 유지하고, 항상 M 사이즈 가격으로 고정했습니다.
+**피자 카드 + 상세보기 모달**: 피자 카테고리는 다른 카테고리와 달리 왼쪽에 작은 정사각형 썸네일, 오른쪽에 이름·짧은 설명·"자세히 보기" 버튼을 두는 가로형 카드이고 (`src/components/pizza-menu-card.tsx`), 재료 목록·사이즈 선택·실시간 가격·장바구니 담기는 모달로 분리했습니다 (`src/components/pizza-detail-modal.tsx`). 사진이 작아진 상태에선 기존 세로 스택(사진 위, 텍스트 아래)보다 리스트형 배달앱에 익숙한 가로 배치가 공간 활용이 낫고, 카드 전체 높이도 사이드/음료 카드와 더 비슷해집니다. 재료 목록은 `description` 필드(예: "토마토 소스, 모차렐라, 바질")를 콤마로 파싱해 만들어서 별도 스키마 필드 없이 성분표처럼 보여줍니다. 치킨/사이드/음료는 사이즈를 구분할 실익이 적어 기존처럼 카드에서 바로 담는 방식(`src/components/pizza-card.tsx`)을 유지하고, 항상 M 사이즈 가격으로 고정했습니다.
 
 메뉴 사진은 `MenuItem.imageUrl`(nullable) 컬럼에 저장되고, 없으면 손으로 그린 `PizzaIcon`(`src/components/icons.tsx`)으로 대체됩니다. 로컬 개발용 매장 복제(`generateNearbyStores`, 위 "매장 찾기" 참고)도 이름이 같은 메뉴를 그대로 베끼는 구조라 `imageUrl`을 함께 복사하도록 했고, 기존에 이미 생성돼 있던 복제 매장들은 `prisma/seed.ts`의 `updateMany` 백필 루프로 한 번에 채웠습니다.
+
+사진 원본마다 노출·채도가 제각각이라 얇은 반투명 검정 오버레이(`bg-black/15`)를 깔아 톤을 통일했습니다. 카드 썸네일과 모달 히어로 이미지는 `PizzaPhoto` 컴포넌트(`src/components/pizza-photo.tsx`)로 공통화했고, `lightbox` prop으로 클릭 시 원본을 오버레이 없이 크게 보는 라이트박스 사용 여부를 제어합니다 — 목록의 작은 썸네일은 그냥 훑어보기용이라 꺼두고(클릭 무반응), "자세히 보기" 상세 모달의 큰 사진에서만 켜뒀습니다.
 
 ## UI 공통 요소
 
@@ -83,11 +86,14 @@
 - **전체 화면 로딩**: 상태 변경처럼 서버에 반영되기까지 시간이 걸리는 작업에 반투명 배경 + 스피너를 띄웁니다 (`src/components/full-screen-loading.tsx`, `src/components/spinner.tsx`). 지금은 주문/매장 상태 변경 버튼에 연결되어 있습니다.
 - **클릭 가능 요소 커서**: Tailwind v4가 `<button>`의 `cursor: pointer` 기본값을 없애서, `button`(비활성 제외)/`[role="button"]`/`label[for]`/`summary`에 포인터 커서를 되살리는 전역 규칙을 뒀습니다 (`src/app/globals.css`). `<div>` 등 버튼이 아닌 요소에 `onClick`을 달 때는 `cursor-pointer`를 직접 붙여야 합니다.
 - **스크롤바 스타일**: OS 기본 스크롤바가 카드/보더 톤(`border-black/[.08]`, dark:`border-white/[.145]`)과 어울리지 않아, 얇고 둥근 형태로 라이트/다크 모두 재스킨했습니다 (`scrollbar-width`/`scrollbar-color` + `::-webkit-scrollbar` 계열, `src/app/globals.css`). 다크 모드 클래스(`.dark`)가 `<html>` 자신에 붙는 구조라 `.dark *`(자손 선택자)만으로는 페이지 자체 스크롤바에 다크 색상이 적용되지 않는 문제가 있어, `.dark, .dark *` 형태로 자기 자신도 함께 선택하도록 처리했습니다.
+- **가격 변경 펄스**: 피자 상세 모달에서 사이즈를 바꾸면 가격 텍스트가 순간적으로 바뀌어 놓치기 쉬워서, primary 색으로 살짝 반짝였다가 원래 색으로 돌아오는 220ms 애니메이션(`.price-pulse`, `src/app/globals.css`)을 넣었습니다. CSS 애니메이션은 같은 값이 다시 할당돼도 재생되지 않아서, 가격 `<span>`에 `key={size}`를 걸어 사이즈가 바뀔 때마다 리마운트되도록 했습니다 (`src/components/pizza-detail-modal.tsx`). `prefers-reduced-motion`에서는 다른 애니메이션과 동일하게 꺼집니다.
 
 ## 사용 라이브러리
 
 - **[lucide-react](https://lucide.dev/)** (ISC License) — 내비게이션 로고(피자), 장바구니, 매장 지도 마커(전화 아이콘)와 다크/라이트 모드 스위치의 해/달 아이콘, 로그인 아이콘 등에 사용. 그 외 화면에 남아있는 손으로 그린 아이콘(`src/components/icons.tsx`)은 별도 라이브러리 없이 직접 그린 SVG path입니다.
 - **[sharp](https://sharp.pixelplumbing.com/)** (Apache 2.0 License) — Next.js가 자체 호스팅 환경에서 이미지 최적화(`next/image`)에 공식 권장하는 라이브러리로, 메뉴 사진을 웹에 맞는 크기로 리사이즈/압축하는 데도 사용했습니다.
+- **[Leaflet](https://leafletjs.com/)** (BSD-2-Clause License) / **[react-leaflet](https://react-leaflet.js.org/)** (Hippocratic License 2.1) — 매장 위치 지도 표시에 사용합니다. 매장 상세 화면(관리자)에는 단일 마커 지도(`src/components/store-map.tsx`)를, 구매자용 매장찾기(`/stores`)에는 사용자 위치·반경 원·복수 매장 마커를 함께 그리는 지도(`src/components/stores-map.tsx`)를 씁니다. Hippocratic 2.1은 오픈소스이되 UN 인권선언 위반 목적 사용을 금지하는 조항이 있는 라이선스입니다. 지도 타일은 [OpenStreetMap](https://www.openstreetmap.org/copyright)에서 API 키 없이 무료로 제공받습니다. Leaflet은 브라우저 `window`가 필요해 `next/dynamic`으로 SSR을 비활성화해서 불러옵니다 (`*-map-lazy.tsx`). 마커 아이콘은 Leaflet 기본 이미지 대신 인라인 SVG(원+삼각형)로 직접 그렸고, 팝업도 앱의 카드/버튼 디자인 및 다크모드에 맞춰 CSS로 다시 스타일링했습니다 (`src/app/globals.css`).
+- **구글 로그인**: 별도 SDK/라이브러리 없이 OAuth 2.0 Authorization Code Flow를 `fetch`만으로 직접 구현했습니다 (`src/lib/auth/google-oauth.ts`). Google Cloud Console에서 OAuth 2.0 클라이언트 ID(웹 애플리케이션)를 발급받아 `.env`의 `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REDIRECT_URI`를 채우면 동작합니다 — 로그인 전용 스코프(`openid email`)만 쓰는 한 별도 결제 계정 등록 없이 무료입니다.
 
 ## 메뉴 사진 출처
 
@@ -103,5 +109,3 @@
 | `bbq-chicken.jpg` | [B.B.Q. Chicken Pizza (26679384893).jpg](https://commons.wikimedia.org/wiki/File:B.B.Q._Chicken_Pizza_(26679384893).jpg) | CC BY 2.0 | Prayitno (Flickr) |
 
 프랜차이즈(피자헛 등) 브랜드가 찍힌 사진은 상표 오인 소지가 있어 후보에서 제외했습니다.
-- **[Leaflet](https://leafletjs.com/)** (BSD-2-Clause License) / **[react-leaflet](https://react-leaflet.js.org/)** (Hippocratic License 2.1) — 매장 위치 지도 표시에 사용합니다. 매장 상세 화면(관리자)에는 단일 마커 지도(`src/components/store-map.tsx`)를, 구매자용 매장찾기(`/stores`)에는 사용자 위치·반경 원·복수 매장 마커를 함께 그리는 지도(`src/components/stores-map.tsx`)를 씁니다. Hippocratic 2.1은 오픈소스이되 UN 인권선언 위반 목적 사용을 금지하는 조항이 있는 라이선스입니다. 지도 타일은 [OpenStreetMap](https://www.openstreetmap.org/copyright)에서 API 키 없이 무료로 제공받습니다. Leaflet은 브라우저 `window`가 필요해 `next/dynamic`으로 SSR을 비활성화해서 불러옵니다 (`*-map-lazy.tsx`). 마커 아이콘은 Leaflet 기본 이미지 대신 인라인 SVG(원+삼각형)로 직접 그렸고, 팝업도 앱의 카드/버튼 디자인 및 다크모드에 맞춰 CSS로 다시 스타일링했습니다 (`src/app/globals.css`).
-- **구글 로그인**: 별도 SDK/라이브러리 없이 OAuth 2.0 Authorization Code Flow를 `fetch`만으로 직접 구현했습니다 (`src/lib/auth/google-oauth.ts`). Google Cloud Console에서 OAuth 2.0 클라이언트 ID(웹 애플리케이션)를 발급받아 `.env`의 `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REDIRECT_URI`를 채우면 동작합니다 — 로그인 전용 스코프(`openid email`)만 쓰는 한 별도 결제 계정 등록 없이 무료입니다.
