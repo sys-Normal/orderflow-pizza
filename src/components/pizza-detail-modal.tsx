@@ -105,7 +105,7 @@ export function PizzaDetailModal({
           </div>
 
           <div className="flex items-center justify-between border-t border-black/[.08] pt-4 dark:border-white/[.145]">
-            <span className="text-lg font-semibold">
+            <span key={size} className="price-pulse text-lg font-semibold">
               {formatPrice(pizza.prices[size])}
             </span>
             <button

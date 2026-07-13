@@ -114,6 +114,28 @@ summary {
   }
 }
 
+/* Brief pulse on a changed price (e.g. switching pizza size) so the new
+   number registers even though it's a plain instant text swap. Re-trigger
+   by remounting the element (e.g. React `key={size}`) — CSS animations
+   don't replay on their own when only the text content changes. */
+@keyframes price-pulse {
+  from {
+    transform: scale(1.14);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+.price-pulse {
+  display: inline-block;
+  animation: price-pulse 180ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .price-pulse {
+    animation: none;
+  }
+}
+
 /* Leaflet marker popups ("말풍선") default to a plain white bubble with its
    own font stack, which clashes with the app's card styling and dark mode.
    Re-skin them to match (surface color, border, radius, font) instead.
