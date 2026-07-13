@@ -120,15 +120,15 @@ summary {
    don't replay on their own when only the text content changes. */
 @keyframes price-pulse {
   from {
-    transform: scale(1.14);
+    color: var(--primary);
   }
   to {
-    transform: scale(1);
+    color: var(--foreground);
   }
 }
 .price-pulse {
   display: inline-block;
-  animation: price-pulse 180ms ease-out;
+  animation: price-pulse 220ms ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
   .price-pulse {
