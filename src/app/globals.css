@@ -39,6 +39,42 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Native scrollbars default to the OS's stark style, which clashes with
+   the app's subtle card/border look (border-black/[.08], dark:border-white/
+   [.145]) used everywhere else — re-skin them to match in both themes. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+.dark,
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 9999px;
+  border: 2px solid var(--background);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.35);
+}
+.dark::-webkit-scrollbar-thumb,
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+.dark::-webkit-scrollbar-thumb:hover,
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
 /* Tailwind v4 dropped the `cursor: pointer` default on <button> (it now
    inherits `default`). Restore the pointer for interactive elements so
    anything clickable actually looks clickable. onClick on non-button
