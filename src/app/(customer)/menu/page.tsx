@@ -63,6 +63,7 @@ export default async function MenuPage({
             <MenuCategorySection
               key={category}
               title={MENU_CATEGORY_LABELS[category]}
+              category={category}
               items={categoryItems}
               storeId={store.id}
               storeName={store.name}

@@ -3,20 +3,27 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { PizzaCard } from "@/components/pizza-card";
-import type { Pizza } from "@/lib/menu/types";
+import { PizzaMenuCard } from "@/components/pizza-menu-card";
+import type { MenuCategory, Pizza } from "@/lib/menu/types";
 
 export function MenuCategorySection({
   title,
+  category,
   items,
   storeId,
   storeName,
 }: {
   title: string;
+  category: MenuCategory;
   items: Pizza[];
   storeId: string;
   storeName: string;
 }) {
   const [expanded, setExpanded] = useState(true);
+  // Pizza gets the photo card + ingredient/size detail modal; other
+  // categories have no size-worthy customization, so they keep the
+  // existing inline size-select + instant-add card.
+  const CardComponent = category === "pizza" ? PizzaMenuCard : PizzaCard;
 
   return (
     <section className="flex flex-col gap-4">
@@ -36,7 +43,7 @@ export function MenuCategorySection({
       {expanded && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {items.map((item) => (
-            <PizzaCard
+            <CardComponent
               key={item.id}
               pizza={item}
               storeId={storeId}
