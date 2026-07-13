@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCart } from "@/lib/cart/cart-context";
 import { createOrder } from "@/lib/orders/actions";
 import { CartSummary } from "@/components/cart-summary";
+import { StoreBadge } from "@/components/store-badge";
 import { FullScreenLoading } from "@/components/full-screen-loading";
 import { useToast } from "@/lib/toast/toast-context";
 
@@ -69,6 +70,7 @@ export default function CheckoutPage() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold tracking-tight">주문하기</h1>
+      <StoreBadge storeName={items[0].storeName} subtitle="주문 매장" />
       <CartSummary items={items} subtotal={subtotal} />
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
