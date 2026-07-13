@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Pizza, PizzaSize } from "@/lib/menu/types";
+import type { Pizza } from "@/lib/menu/types";
 import { useCart } from "@/lib/cart/cart-context";
 import { useToast } from "@/lib/toast/toast-context";
 
-const SIZES: PizzaSize[] = ["S", "M", "L"];
+// Chicken/side/drink don't need a size choice, so this card always adds the
+// "M" tier — the underlying Pizza/CartItem type still carries S/M/L pricing,
+// but only M is ever shown or ordered here.
+const FIXED_SIZE = "M" as const;
 
 function formatPrice(amount: number) {
   return `${amount.toLocaleString("ko-KR")}원`;
@@ -20,7 +23,6 @@ export function PizzaCard({
   storeId: string;
   storeName: string;
 }) {
-  const [size, setSize] = useState<PizzaSize>("M");
   const [pressed, setPressed] = useState(false);
   const { addItem } = useCart();
   const { showToast } = useToast();
@@ -40,33 +42,18 @@ export function PizzaCard({
         </p>
       </div>
 
-      <div className="flex gap-2">
-        {SIZES.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setSize(s)}
-            className={`rounded-full border px-3 py-1 text-sm ${
-              size === s
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-black/[.08] dark:border-white/[.145]"
-            }`}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
-
       <div className="flex items-center justify-between">
-        <span className="font-medium">{formatPrice(pizza.prices[size])}</span>
+        <span className="font-medium">
+          {formatPrice(pizza.prices[FIXED_SIZE])}
+        </span>
         <button
           type="button"
           onClick={() => {
             addItem({
               pizzaId: pizza.id,
               name: pizza.name,
-              size,
-              unitPrice: pizza.prices[size],
+              size: FIXED_SIZE,
+              unitPrice: pizza.prices[FIXED_SIZE],
               quantity: 1,
               storeId,
               storeName,
