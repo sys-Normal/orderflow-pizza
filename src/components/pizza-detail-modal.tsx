@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { X } from "lucide-react";
-import { PizzaIcon } from "@/components/icons";
+import { PizzaPhoto } from "@/components/pizza-photo";
 import { useCart } from "@/lib/cart/cart-context";
 import { useToast } from "@/lib/toast/toast-context";
 import type { Pizza, PizzaSize } from "@/lib/menu/types";
@@ -52,18 +51,13 @@ export function PizzaDetailModal({
         className="flex w-full max-w-md flex-col overflow-hidden rounded-lg border border-black/[.08] bg-surface dark:border-white/[.145]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="relative flex aspect-[4/3] items-center justify-center bg-primary/10 text-primary">
-          {pizza.imageUrl ? (
-            <Image
-              src={pizza.imageUrl}
-              alt={pizza.name}
-              fill
-              sizes="448px"
-              className="object-cover"
-            />
-          ) : (
-            <PizzaIcon className="h-16 w-16" />
-          )}
+        <div className="relative">
+          <PizzaPhoto
+            imageUrl={pizza.imageUrl}
+            alt={pizza.name}
+            aspectClassName="aspect-[4/3]"
+            sizes="448px"
+          />
           <button
             type="button"
             onClick={onClose}

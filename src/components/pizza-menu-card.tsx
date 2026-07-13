@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import { PizzaIcon } from "@/components/icons";
 import { PizzaDetailModal } from "@/components/pizza-detail-modal";
+import { PizzaPhoto } from "@/components/pizza-photo";
 import type { Pizza } from "@/lib/menu/types";
 
 export function PizzaMenuCard({
@@ -20,19 +19,12 @@ export function PizzaMenuCard({
   return (
     <>
       <div className="flex flex-col overflow-hidden rounded-lg border border-black/[.08] bg-surface dark:border-white/[.145]">
-        <div className="relative flex aspect-square items-center justify-center bg-primary/10 text-primary">
-          {pizza.imageUrl ? (
-            <Image
-              src={pizza.imageUrl}
-              alt={pizza.name}
-              fill
-              sizes="(min-width: 640px) 50vw, 100vw"
-              className="object-cover"
-            />
-          ) : (
-            <PizzaIcon className="h-16 w-16" />
-          )}
-        </div>
+        <PizzaPhoto
+          imageUrl={pizza.imageUrl}
+          alt={pizza.name}
+          aspectClassName="aspect-square"
+          sizes="(min-width: 640px) 50vw, 100vw"
+        />
         <div className="flex flex-1 flex-col gap-3 p-4">
           <div>
             <h3 className="text-base font-semibold">{pizza.name}</h3>
