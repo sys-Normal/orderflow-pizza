@@ -26,4 +26,5 @@ export type Pizza = {
   description: string;
   category: MenuCategory;
   prices: Record<PizzaSize, number>;
+  imageUrl?: string | null;
 };

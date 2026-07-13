@@ -65,6 +65,7 @@ export async function generateNearbyStores(
             priceS: item.priceS,
             priceM: item.priceM,
             priceL: item.priceL,
+            imageUrl: item.imageUrl,
             isAvailable: item.isAvailable,
           })),
         },

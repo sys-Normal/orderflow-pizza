@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { PizzaIcon } from "@/components/icons";
 import { PizzaDetailModal } from "@/components/pizza-detail-modal";
 import type { Pizza } from "@/lib/menu/types";
@@ -19,10 +20,18 @@ export function PizzaMenuCard({
   return (
     <>
       <div className="flex flex-col overflow-hidden rounded-lg border border-black/[.08] bg-surface dark:border-white/[.145]">
-        {/* Placeholder photo — every pizza shares this until real per-item
-            photos are sourced and swapped in. */}
-        <div className="flex aspect-square items-center justify-center bg-primary/10 text-primary">
-          <PizzaIcon className="h-16 w-16" />
+        <div className="relative flex aspect-square items-center justify-center bg-primary/10 text-primary">
+          {pizza.imageUrl ? (
+            <Image
+              src={pizza.imageUrl}
+              alt={pizza.name}
+              fill
+              sizes="(min-width: 640px) 50vw, 100vw"
+              className="object-cover"
+            />
+          ) : (
+            <PizzaIcon className="h-16 w-16" />
+          )}
         </div>
         <div className="flex flex-1 flex-col gap-3 p-4">
           <div>

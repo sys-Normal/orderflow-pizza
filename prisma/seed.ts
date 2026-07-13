@@ -22,6 +22,7 @@ const MENU_ITEMS: Pizza[] = [
     description: "토마토 소스, 모차렐라, 바질",
     category: "pizza",
     prices: { S: 12000, M: 16000, L: 20000 },
+    imageUrl: "/menu/margherita.jpg",
   },
   {
     id: "pepperoni",
@@ -29,6 +30,7 @@ const MENU_ITEMS: Pizza[] = [
     description: "토마토 소스, 모차렐라, 페퍼로니",
     category: "pizza",
     prices: { S: 13000, M: 17000, L: 21000 },
+    imageUrl: "/menu/pepperoni.jpg",
   },
   {
     id: "bbq-chicken-pizza",
@@ -36,6 +38,7 @@ const MENU_ITEMS: Pizza[] = [
     description: "BBQ 소스, 그릴드 치킨, 양파, 모차렐라",
     category: "pizza",
     prices: { S: 15000, M: 19000, L: 23000 },
+    imageUrl: "/menu/bbq-chicken.jpg",
   },
   {
     id: "veggie-supreme",
@@ -43,6 +46,7 @@ const MENU_ITEMS: Pizza[] = [
     description: "피망, 올리브, 버섯, 양파, 옥수수",
     category: "pizza",
     prices: { S: 13000, M: 17000, L: 21000 },
+    imageUrl: "/menu/supreme.jpg",
   },
   {
     id: "hawaiian",
@@ -50,6 +54,7 @@ const MENU_ITEMS: Pizza[] = [
     description: "햄, 파인애플, 모차렐라",
     category: "pizza",
     prices: { S: 13000, M: 17000, L: 21000 },
+    imageUrl: "/menu/hawaiian.jpg",
   },
   {
     id: "four-cheese",
@@ -57,6 +62,7 @@ const MENU_ITEMS: Pizza[] = [
     description: "모차렐라, 고르곤졸라, 파마산, 체다",
     category: "pizza",
     prices: { S: 15000, M: 19000, L: 23000 },
+    imageUrl: "/menu/quattro-formaggi.jpg",
   },
   // 치킨
   {
@@ -187,6 +193,7 @@ async function main() {
         priceS: item.prices.S,
         priceM: item.prices.M,
         priceL: item.prices.L,
+        imageUrl: item.imageUrl,
       },
       create: {
         id: item.id,
@@ -197,8 +204,19 @@ async function main() {
         priceS: item.prices.S,
         priceM: item.prices.M,
         priceL: item.prices.L,
+        imageUrl: item.imageUrl,
       },
     });
+
+    // Local-dev "nearby" clone stores (src/lib/stores/seed-nearby.ts) copy
+    // menu items by name into their own rows with their own ids, so they
+    // don't get touched by the upsert above — backfill them here too.
+    if (item.imageUrl) {
+      await prisma.menuItem.updateMany({
+        where: { name: item.name },
+        data: { imageUrl: item.imageUrl },
+      });
+    }
   }
 
   console.log(`Seeded store "${store.name}" with ${MENU_ITEMS.length} menu items.`);

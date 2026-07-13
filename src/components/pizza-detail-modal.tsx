@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { X } from "lucide-react";
 import { PizzaIcon } from "@/components/icons";
 import { useCart } from "@/lib/cart/cart-context";
@@ -48,81 +49,91 @@ export function PizzaDetailModal({
       onClick={onClose}
     >
       <div
-        className="flex w-full max-w-md flex-col gap-5 rounded-lg border border-black/[.08] bg-surface p-5 dark:border-white/[.145]"
+        className="flex w-full max-w-md flex-col overflow-hidden rounded-lg border border-black/[.08] bg-surface dark:border-white/[.145]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex aspect-square w-20 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <PizzaIcon className="h-10 w-10" />
-          </div>
+        <div className="relative flex aspect-[4/3] items-center justify-center bg-primary/10 text-primary">
+          {pizza.imageUrl ? (
+            <Image
+              src={pizza.imageUrl}
+              alt={pizza.name}
+              fill
+              sizes="448px"
+              className="object-cover"
+            />
+          ) : (
+            <PizzaIcon className="h-16 w-16" />
+          )}
           <button
             type="button"
             onClick={onClose}
             aria-label="닫기"
-            className="text-zinc-600 hover:text-primary dark:text-zinc-400"
+            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-foreground backdrop-blur-sm hover:text-primary"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
-        <h2 className="text-lg font-semibold tracking-tight">{pizza.name}</h2>
+        <div className="flex flex-col gap-5 p-5">
+          <h2 className="text-lg font-semibold tracking-tight">{pizza.name}</h2>
 
-        <div>
-          <p className="mb-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-            들어가는 재료
-          </p>
-          <ul className="flex flex-col gap-1.5 rounded-lg border border-black/[.08] p-3 text-sm dark:border-white/[.145]">
-            {ingredients.map((ingredient) => (
-              <li key={ingredient}>{ingredient}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <p className="mb-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-            사이즈 선택
-          </p>
-          <div className="flex gap-2">
-            {SIZES.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setSize(s)}
-                className={`flex-1 rounded-full border px-3 py-2 text-sm font-medium ${
-                  size === s
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-black/[.08] dark:border-white/[.145]"
-                }`}
-              >
-                {s}
-              </button>
-            ))}
+          <div>
+            <p className="mb-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              들어가는 재료
+            </p>
+            <ul className="flex flex-col gap-1.5 rounded-lg border border-black/[.08] p-3 text-sm dark:border-white/[.145]">
+              {ingredients.map((ingredient) => (
+                <li key={ingredient}>{ingredient}</li>
+              ))}
+            </ul>
           </div>
-        </div>
 
-        <div className="flex items-center justify-between border-t border-black/[.08] pt-4 dark:border-white/[.145]">
-          <span className="text-lg font-semibold">
-            {formatPrice(pizza.prices[size])}
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              addItem({
-                pizzaId: pizza.id,
-                name: pizza.name,
-                size,
-                unitPrice: pizza.prices[size],
-                quantity: 1,
-                storeId,
-                storeName,
-              });
-              showToast(`${pizza.name} 장바구니에 담았습니다`);
-              onClose();
-            }}
-            className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            장바구니 담기
-          </button>
+          <div>
+            <p className="mb-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              사이즈 선택
+            </p>
+            <div className="flex gap-2">
+              {SIZES.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSize(s)}
+                  className={`flex-1 rounded-full border px-3 py-2 text-sm font-medium ${
+                    size === s
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-black/[.08] dark:border-white/[.145]"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between border-t border-black/[.08] pt-4 dark:border-white/[.145]">
+            <span className="text-lg font-semibold">
+              {formatPrice(pizza.prices[size])}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                addItem({
+                  pizzaId: pizza.id,
+                  name: pizza.name,
+                  size,
+                  unitPrice: pizza.prices[size],
+                  quantity: 1,
+                  storeId,
+                  storeName,
+                });
+                showToast(`${pizza.name} 장바구니에 담았습니다`);
+                onClose();
+              }}
+              className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              장바구니 담기
+            </button>
+          </div>
         </div>
       </div>
     </div>

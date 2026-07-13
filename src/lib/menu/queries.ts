@@ -9,6 +9,7 @@ function toPizza(item: {
   priceS: number;
   priceM: number;
   priceL: number;
+  imageUrl: string | null;
 }): Pizza {
   return {
     id: item.id,
@@ -16,6 +17,7 @@ function toPizza(item: {
     description: item.description,
     category: item.category as MenuCategory,
     prices: { S: item.priceS, M: item.priceM, L: item.priceL },
+    imageUrl: item.imageUrl,
   };
 }
 

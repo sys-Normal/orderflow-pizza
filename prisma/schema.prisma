@@ -94,6 +94,7 @@ model MenuItem {
   priceS      Int
   priceM      Int
   priceL      Int
+  imageUrl    String?
   isAvailable Boolean      @default(true)
 
   orderItems OrderItem[]

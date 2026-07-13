@@ -68,9 +68,13 @@
 
 ## 메뉴 구성
 
-`MenuItem`에 `category`(`pizza`/`chicken`/`side`/`drink`) enum을 두고, 메뉴 화면에서 카테고리별로 섹션을 나눠 보여줍니다. 각 섹션은 기본 펼침 상태이며 제목을 클릭하면 접고 펼 수 있습니다 (`src/components/menu-category-section.tsx`). 카테고리별 최소 4개씩 시드되어 있습니다 (`prisma/seed.ts`).
+`MenuItem`에 `category`(`pizza`/`chicken`/`side`/`drink`) enum을 두고, 메뉴 화면에서 카테고리별로 섹션을 나눠 보여줍니다. 각 섹션은 기본 펼침 상태이며 제목을 클릭하면 접고 펼 수 있습니다 (`src/components/menu-category-section.tsx`). 카테고리별 최소 4개씩 시드되어 있습니다 (`prisma/seed.ts`). `chicken` 카테고리는 현재 `DISABLED_MENU_CATEGORIES`(`src/lib/menu/types.ts`)로 화면 노출만 임시로 꺼둔 상태입니다 — 데이터는 그대로 시드되어 있고, 배열에서 빼면 바로 다시 노출됩니다.
 
 메뉴 화면(`/menu`) 상단에는 매장 목록(`/stores`)으로 돌아가는 링크와, 원형 아이콘 배지(매장 아이콘) + 매장명 + "메뉴" 부제 2줄로 구성된 헤더가 있습니다 (`src/app/(customer)/menu/page.tsx`). 매장이 여러 곳일 수 있는 구조라 지금 보고 있는 게 어느 매장 메뉴인지 명확히 드러나야 했고, 텍스트 크기만으로 강조하거나 구분선·브레드크럼(`/`)으로 구분하는 방식은 화면이 좁아지거나 시각적으로 어수선해지는 문제가 있어 최종적으로 장바구니 뱃지·로그인 아바타 등 앱 전반에서 쓰는 원형 배지 톤에 맞춘 형태로 정리했습니다.
+
+**피자 카드 + 상세보기 모달**: 피자 카테고리는 다른 카테고리와 달리 사진(정사각형) + 이름 + 짧은 설명 + "자세히 보기" 버튼만 카드에 두고 (`src/components/pizza-menu-card.tsx`), 재료 목록·사이즈 선택·실시간 가격·장바구니 담기는 모달로 분리했습니다 (`src/components/pizza-detail-modal.tsx`). 재료 목록은 `description` 필드(예: "토마토 소스, 모차렐라, 바질")를 콤마로 파싱해 만들어서 별도 스키마 필드 없이 성분표처럼 보여줍니다. 치킨/사이드/음료는 사이즈를 구분할 실익이 적어 기존처럼 카드에서 바로 담는 방식(`src/components/pizza-card.tsx`)을 유지하고, 항상 M 사이즈 가격으로 고정했습니다.
+
+메뉴 사진은 `MenuItem.imageUrl`(nullable) 컬럼에 저장되고, 없으면 손으로 그린 `PizzaIcon`(`src/components/icons.tsx`)으로 대체됩니다. 로컬 개발용 매장 복제(`generateNearbyStores`, 위 "매장 찾기" 참고)도 이름이 같은 메뉴를 그대로 베끼는 구조라 `imageUrl`을 함께 복사하도록 했고, 기존에 이미 생성돼 있던 복제 매장들은 `prisma/seed.ts`의 `updateMany` 백필 루프로 한 번에 채웠습니다.
 
 ## UI 공통 요소
 
@@ -83,5 +87,21 @@
 ## 사용 라이브러리
 
 - **[lucide-react](https://lucide.dev/)** (ISC License) — 내비게이션 로고(피자), 장바구니, 매장 지도 마커(전화 아이콘)와 다크/라이트 모드 스위치의 해/달 아이콘, 로그인 아이콘 등에 사용. 그 외 화면에 남아있는 손으로 그린 아이콘(`src/components/icons.tsx`)은 별도 라이브러리 없이 직접 그린 SVG path입니다.
+- **[sharp](https://sharp.pixelplumbing.com/)** (Apache 2.0 License) — Next.js가 자체 호스팅 환경에서 이미지 최적화(`next/image`)에 공식 권장하는 라이브러리로, 메뉴 사진을 웹에 맞는 크기로 리사이즈/압축하는 데도 사용했습니다.
+
+## 메뉴 사진 출처
+
+`public/menu/`의 피자 사진은 [Wikimedia Commons](https://commons.wikimedia.org/)에서 상업적 이용이 허용된 라이선스의 사진만 골라 가져왔고, 원본을 웹에 맞게 리사이즈/압축했습니다 (수정 사실 명시).
+
+| 파일 | 원본 | 라이선스 | 저작자 |
+| --- | --- | --- | --- |
+| `margherita.jpg` | [Eq it-na pizza-margherita sep2005 sml.jpg](https://commons.wikimedia.org/wiki/File:Eq_it-na_pizza-margherita_sep2005_sml.jpg) | CC BY-SA 3.0 | Valerio Capello |
+| `pepperoni.jpg` | [Pepperoni pizza.jpg](https://commons.wikimedia.org/wiki/File:Pepperoni_pizza.jpg) | Public Domain | Jon Sullivan |
+| `supreme.jpg` | [Supreme pizza.jpg](https://commons.wikimedia.org/wiki/File:Supreme_pizza.jpg) | Public Domain | Scott Bauer, USDA ARS |
+| `hawaiian.jpg` | [Hawaiian pizza 1.jpg](https://commons.wikimedia.org/wiki/File:Hawaiian_pizza_1.jpg) | CC BY 2.0 | @joefoodie (Flickr) |
+| `quattro-formaggi.jpg` | [Pizza quattro formaggi at restaurant, Chalk Farm Road, London.jpg](https://commons.wikimedia.org/wiki/File:Pizza_quattro_formaggi_at_restaurant,_Chalk_Farm_Road,_London.jpg) | CC BY-SA 2.0 | Ewan Munro |
+| `bbq-chicken.jpg` | [B.B.Q. Chicken Pizza (26679384893).jpg](https://commons.wikimedia.org/wiki/File:B.B.Q._Chicken_Pizza_(26679384893).jpg) | CC BY 2.0 | Prayitno (Flickr) |
+
+프랜차이즈(피자헛 등) 브랜드가 찍힌 사진은 상표 오인 소지가 있어 후보에서 제외했습니다.
 - **[Leaflet](https://leafletjs.com/)** (BSD-2-Clause License) / **[react-leaflet](https://react-leaflet.js.org/)** (Hippocratic License 2.1) — 매장 위치 지도 표시에 사용합니다. 매장 상세 화면(관리자)에는 단일 마커 지도(`src/components/store-map.tsx`)를, 구매자용 매장찾기(`/stores`)에는 사용자 위치·반경 원·복수 매장 마커를 함께 그리는 지도(`src/components/stores-map.tsx`)를 씁니다. Hippocratic 2.1은 오픈소스이되 UN 인권선언 위반 목적 사용을 금지하는 조항이 있는 라이선스입니다. 지도 타일은 [OpenStreetMap](https://www.openstreetmap.org/copyright)에서 API 키 없이 무료로 제공받습니다. Leaflet은 브라우저 `window`가 필요해 `next/dynamic`으로 SSR을 비활성화해서 불러옵니다 (`*-map-lazy.tsx`). 마커 아이콘은 Leaflet 기본 이미지 대신 인라인 SVG(원+삼각형)로 직접 그렸고, 팝업도 앱의 카드/버튼 디자인 및 다크모드에 맞춰 CSS로 다시 스타일링했습니다 (`src/app/globals.css`).
 - **구글 로그인**: 별도 SDK/라이브러리 없이 OAuth 2.0 Authorization Code Flow를 `fetch`만으로 직접 구현했습니다 (`src/lib/auth/google-oauth.ts`). Google Cloud Console에서 OAuth 2.0 클라이언트 ID(웹 애플리케이션)를 발급받아 `.env`의 `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REDIRECT_URI`를 채우면 동작합니다 — 로그인 전용 스코프(`openid email`)만 쓰는 한 별도 결제 계정 등록 없이 무료입니다.
