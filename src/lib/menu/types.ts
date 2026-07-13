@@ -9,6 +9,10 @@ export const MENU_CATEGORY_ORDER: MenuCategory[] = [
   "drink",
 ];
 
+// Temporarily hidden from the customer-facing menu — data stays seeded/valid,
+// just not rendered as a section. Remove an entry here to bring it back.
+export const DISABLED_MENU_CATEGORIES: MenuCategory[] = ["chicken"];
+
 export const MENU_CATEGORY_LABELS: Record<MenuCategory, string> = {
   pizza: "피자",
   chicken: "치킨",

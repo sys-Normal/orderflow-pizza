@@ -4,7 +4,11 @@ import { notFound } from "next/navigation";
 import { getMenu } from "@/lib/menu/queries";
 import { getPrimaryStore, getStoreById } from "@/lib/stores/queries";
 import { MenuCategorySection } from "@/components/menu-category-section";
-import { MENU_CATEGORY_LABELS, MENU_CATEGORY_ORDER } from "@/lib/menu/types";
+import {
+  DISABLED_MENU_CATEGORIES,
+  MENU_CATEGORY_LABELS,
+  MENU_CATEGORY_ORDER,
+} from "@/lib/menu/types";
 
 export default async function MenuPage({
   searchParams,
@@ -50,7 +54,9 @@ export default async function MenuPage({
       </div>
 
       <div className="flex flex-col gap-10">
-        {MENU_CATEGORY_ORDER.map((category) => {
+        {MENU_CATEGORY_ORDER.filter(
+          (category) => !DISABLED_MENU_CATEGORIES.includes(category)
+        ).map((category) => {
           const categoryItems = items.filter((item) => item.category === category);
           if (categoryItems.length === 0) return null;
           return (
