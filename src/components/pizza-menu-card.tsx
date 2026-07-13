@@ -18,14 +18,16 @@ export function PizzaMenuCard({
 
   return (
     <>
-      <div className="flex flex-col overflow-hidden rounded-lg border border-black/[.08] bg-surface dark:border-white/[.145]">
-        <PizzaPhoto
-          imageUrl={pizza.imageUrl}
-          alt={pizza.name}
-          aspectClassName="aspect-square"
-          sizes="(min-width: 640px) 50vw, 100vw"
-        />
-        <div className="flex flex-1 flex-col gap-3 p-4">
+      <div className="flex gap-4 rounded-lg border border-black/[.08] bg-surface p-4 dark:border-white/[.145]">
+        <div className="h-24 w-24 shrink-0 overflow-hidden rounded-lg">
+          <PizzaPhoto
+            imageUrl={pizza.imageUrl}
+            alt={pizza.name}
+            aspectClassName="aspect-square"
+            sizes="96px"
+          />
+        </div>
+        <div className="flex flex-1 flex-col gap-3">
           <div>
             <h3 className="text-base font-semibold">{pizza.name}</h3>
             <p className="line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">
