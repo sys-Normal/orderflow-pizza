@@ -22,8 +22,9 @@ export default async function MenuPage({
   return (
     <div className="flex flex-col gap-10">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">메뉴</h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">{store.name}</p>
+        <p className="text-sm font-medium text-primary">현재 매장</p>
+        <h1 className="text-3xl font-bold tracking-tight">{store.name}</h1>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">메뉴</p>
         {store.description && (
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             {store.description}
