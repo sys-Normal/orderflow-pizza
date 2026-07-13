@@ -3,7 +3,13 @@ import type { CartItem } from "@/lib/cart/types";
 type SummaryLine = Pick<
   CartItem,
   "pizzaId" | "name" | "size" | "unitPrice" | "quantity"
->;
+> & {
+  // Optional because order-history views (confirmation/admin) build this
+  // list from OrderItem, which doesn't track category — those keep
+  // showing the size for backward compatibility. Only the live cart (which
+  // always knows the category) can suppress it.
+  category?: CartItem["category"];
+};
 
 function formatPrice(amount: number) {
   return `${amount.toLocaleString("ko-KR")}원`;
@@ -32,7 +38,9 @@ export function CartSummary({
           >
             <div>
               <p className="font-medium">
-                {line.name} ({line.size})
+                {line.name}
+                {(line.category === undefined || line.category === "pizza") &&
+                  ` (${line.size})`}
               </p>
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
                 {formatPrice(line.unitPrice)} x {line.quantity}

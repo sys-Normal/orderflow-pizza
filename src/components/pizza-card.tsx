@@ -52,6 +52,7 @@ export function PizzaCard({
             addItem({
               pizzaId: pizza.id,
               name: pizza.name,
+              category: pizza.category,
               size: FIXED_SIZE,
               unitPrice: pizza.prices[FIXED_SIZE],
               quantity: 1,

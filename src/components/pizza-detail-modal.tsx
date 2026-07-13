@@ -114,6 +114,7 @@ export function PizzaDetailModal({
                 addItem({
                   pizzaId: pizza.id,
                   name: pizza.name,
+                  category: pizza.category,
                   size,
                   unitPrice: pizza.prices[size],
                   quantity: 1,
