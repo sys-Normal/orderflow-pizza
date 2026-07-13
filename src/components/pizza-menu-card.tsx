@@ -25,6 +25,7 @@ export function PizzaMenuCard({
             alt={pizza.name}
             aspectClassName="aspect-square"
             sizes="96px"
+            lightbox={false}
           />
         </div>
         <div className="flex flex-1 flex-col gap-3">

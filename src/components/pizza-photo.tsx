@@ -10,11 +10,16 @@ export function PizzaPhoto({
   alt,
   aspectClassName,
   sizes,
+  lightbox = true,
 }: {
   imageUrl?: string | null;
   alt: string;
   aspectClassName: string;
   sizes: string;
+  /** Card-grid thumbnails are just a browsing preview, not a "view this
+   * closely" affordance, so the list can opt out of the click-to-zoom
+   * lightbox while the detail modal keeps it. */
+  lightbox?: boolean;
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
@@ -37,20 +42,32 @@ export function PizzaPhoto({
     );
   }
 
+  const photo = (
+    <>
+      <Image src={imageUrl} alt={alt} fill sizes={sizes} className="object-cover" />
+      {/* Source photos vary a lot in exposure/saturation — a flat dark
+          layer keeps them visually consistent and less harsh next to the
+          muted card UI, regardless of theme. */}
+      <div className="absolute inset-0 bg-black/15" />
+    </>
+  );
+
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setLightboxOpen(true)}
-        aria-label={`${alt} 원본 사진 크게 보기`}
-        className={`relative block w-full ${aspectClassName} overflow-hidden bg-primary/10`}
-      >
-        <Image src={imageUrl} alt={alt} fill sizes={sizes} className="object-cover" />
-        {/* Source photos vary a lot in exposure/saturation — a flat dark
-            layer keeps them visually consistent and less harsh next to the
-            muted card UI, regardless of theme. */}
-        <div className="absolute inset-0 bg-black/15" />
-      </button>
+      {lightbox ? (
+        <button
+          type="button"
+          onClick={() => setLightboxOpen(true)}
+          aria-label={`${alt} 원본 사진 크게 보기`}
+          className={`relative block w-full ${aspectClassName} overflow-hidden bg-primary/10`}
+        >
+          {photo}
+        </button>
+      ) : (
+        <div className={`relative w-full ${aspectClassName} overflow-hidden bg-primary/10`}>
+          {photo}
+        </div>
+      )}
       {lightboxOpen && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4"
