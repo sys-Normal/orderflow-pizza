@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getMenu } from "@/lib/menu/queries";
 import { getPrimaryStore, getStoreById } from "@/lib/stores/queries";
@@ -22,6 +24,13 @@ export default async function MenuPage({
   return (
     <div className="flex flex-col gap-10">
       <div>
+        <Link
+          href="/stores"
+          className="mb-3 inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-primary dark:text-zinc-400"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          매장 목록
+        </Link>
         <p className="text-sm font-medium text-primary">현재 매장</p>
         <h1 className="text-3xl font-bold tracking-tight">{store.name}</h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">메뉴</p>
