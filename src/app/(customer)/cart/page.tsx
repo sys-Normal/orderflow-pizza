@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { useCart } from "@/lib/cart/cart-context";
 import { useToast } from "@/lib/toast/toast-context";
 import { CartSummary } from "@/components/cart-summary";
@@ -40,6 +41,13 @@ export default function CartPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <Link
+        href={`/menu?storeId=${items[0].storeId}`}
+        className="inline-flex items-center gap-1 self-start text-sm text-zinc-600 hover:text-primary dark:text-zinc-400"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        메뉴로 돌아가기
+      </Link>
       <h1 className="text-2xl font-semibold tracking-tight">장바구니</h1>
       <StoreBadge storeName={items[0].storeName} subtitle="담긴 매장" />
       <CartSummary
