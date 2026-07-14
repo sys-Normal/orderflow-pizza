@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, RedirectType } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import {
@@ -40,7 +40,7 @@ export async function buyerLoginAction(
   }
 
   await setBuyerSession(user.id);
-  redirect(next);
+  redirect(next, RedirectType.replace);
 }
 
 export async function buyerSignupAction(
@@ -69,7 +69,7 @@ export async function buyerSignupAction(
   });
 
   await setBuyerSession(user.id);
-  redirect(next);
+  redirect(next, RedirectType.replace);
 }
 
 export async function buyerLogoutAction() {
