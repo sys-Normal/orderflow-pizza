@@ -114,25 +114,48 @@ export function CartProvider({
     store.getServerSnapshot
   );
   const [pendingItem, setPendingItem] = useState<CartItem | null>(null);
+  const [cartConflict, setCartConflict] = useState<{
+    local: CartItem[];
+    server: CartItem[];
+  } | null>(null);
 
   // Reconcile the local (guest) cart with the account's saved cart whenever
   // the auth state settles. This must react to isLoggedIn *transitions*, not
   // just mount: logging in redirects within the same customer layout, so
   // CartProvider stays mounted and only its props change. Rules the user chose:
-  // - logging in + server cart exists → server wins (resume across devices)
-  // - logging in + server empty       → promote whatever was in the local cart
-  // - guest after a prior logout      → clear this device's cart
+  // - logging in + server cart exists, local empty → server wins (resume across devices)
+  // - logging in + server empty                    → promote whatever was in the local cart
+  // - logging in + BOTH have items                  → ask (see cartConflict below); silently
+  //   picking one used to discard the other without warning, worst-case right at checkout
+  // - guest after a prior logout                    → clear this device's cart
+  //
+  // Gotcha: `was === true` only catches transitions within the *same* mount —
+  // any hard reload, new tab, or dev-server restart remounts CartProvider and
+  // resets this ref to null, even though the session cookie is still logged
+  // in. Without also checking `wasOwned()` (a durable localStorage flag), that
+  // remount looks identical to a fresh login and re-triggers the conflict
+  // prompt on an ordinary page refresh, not just an actual login action.
   const prevLoggedIn = useRef<boolean | null>(null);
   useEffect(() => {
     const was = prevLoggedIn.current;
     prevLoggedIn.current = isLoggedIn;
 
     if (isLoggedIn) {
-      if (was === true) return; // already reconciled while logged in
-      if (initialServerCart.length > 0) {
+      if (was === true || wasOwned()) {
+        markOwned();
+        return; // already reconciled while logged in, on this device
+      }
+      const local = store.read();
+      if (initialServerCart.length > 0 && local.length > 0) {
+        // Not derivable from render: this only fires once, on the genuine
+        // false→true isLoggedIn transition guarded above, to surface a
+        // one-time reconciliation prompt — not a render-time value sync.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setCartConflict({ local, server: initialServerCart });
+      } else if (initialServerCart.length > 0) {
         store.write(initialServerCart);
-      } else if (store.read().length > 0) {
-        void saveCart(store.read()).catch(() => {});
+      } else if (local.length > 0) {
+        void saveCart(local).catch(() => {});
       }
       markOwned();
     } else if (was === true || wasOwned()) {
@@ -145,14 +168,16 @@ export function CartProvider({
   }, [isLoggedIn]);
 
   // Persist to the account on every change while logged in (debounced so
-  // rapid quantity edits don't each hit the DB).
+  // rapid quantity edits don't each hit the DB). Skipped while a cartConflict
+  // is unresolved so this doesn't race ahead and save the guest cart over the
+  // server cart before the user has picked which one to keep.
   useEffect(() => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn || cartConflict) return;
     const timer = setTimeout(() => {
       void saveCart(items).catch(() => {});
     }, 500);
     return () => clearTimeout(timer);
-  }, [items, isLoggedIn]);
+  }, [items, isLoggedIn, cartConflict]);
 
   // A cart can only hold items from one store at a time, since an order is
   // placed against a single storeId. Adding from a different store asks the
@@ -200,6 +225,22 @@ export function CartProvider({
             setPendingItem(null);
           }}
           onCancel={() => setPendingItem(null)}
+        />
+      )}
+      {cartConflict && (
+        <ConfirmDialog
+          title="다른 장바구니 발견"
+          message="계정에 저장된 장바구니가 있어요. 저장된 장바구니를 불러올까요, 아니면 방금 담은 내용을 유지할까요?"
+          confirmLabel="저장된 장바구니 불러오기"
+          cancelLabel="방금 담은 내용 유지"
+          onConfirm={() => {
+            store.write(cartConflict.server);
+            setCartConflict(null);
+          }}
+          onCancel={() => {
+            void saveCart(cartConflict.local).catch(() => {});
+            setCartConflict(null);
+          }}
         />
       )}
     </CartContext.Provider>
