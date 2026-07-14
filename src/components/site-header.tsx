@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 import { Pizza, ShoppingCart, User } from "lucide-react";
 import { useCart } from "@/lib/cart/cart-context";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { buyerLogoutAction } from "@/lib/auth/buyer-actions";
+import { UserMenu } from "@/components/user-menu";
 
-export function SiteHeader({ buyerEmail }: { buyerEmail?: string | null }) {
+export type BuyerAccount = { email: string; provider: "email" | "google" };
+
+export function SiteHeader({ buyer }: { buyer?: BuyerAccount | null }) {
   const { itemCount } = useCart();
   const pathname = usePathname();
 
@@ -34,24 +36,8 @@ export function SiteHeader({ buyerEmail }: { buyerEmail?: string | null }) {
               </span>
             )}
           </Link>
-          {buyerEmail ? (
-            <div className="flex items-center gap-2">
-              <div
-                title={buyerEmail}
-                aria-label={buyerEmail}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground"
-              >
-                {buyerEmail.charAt(0).toUpperCase()}
-              </div>
-              <form action={buyerLogoutAction}>
-                <button
-                  type="submit"
-                  className="text-xs text-zinc-600 hover:underline dark:text-zinc-400"
-                >
-                  로그아웃
-                </button>
-              </form>
-            </div>
+          {buyer ? (
+            <UserMenu email={buyer.email} provider={buyer.provider} />
           ) : (
             <Link href={`/login?next=${encodeURIComponent(pathname)}`} aria-label="로그인">
               <User className="h-6 w-6" />

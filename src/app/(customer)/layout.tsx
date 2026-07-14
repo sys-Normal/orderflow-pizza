@@ -13,7 +13,7 @@ export default async function CustomerLayout({ children }: { children: ReactNode
     ? await Promise.all([
         prisma.user.findUnique({
           where: { id: session.userId },
-          select: { email: true },
+          select: { email: true, googleId: true },
         }),
         getCartForUser(session.userId),
       ])
@@ -21,7 +21,13 @@ export default async function CustomerLayout({ children }: { children: ReactNode
 
   return (
     <CartProvider isLoggedIn={isBuyer} initialServerCart={initialServerCart}>
-      <SiteHeader buyerEmail={buyer?.email} />
+      <SiteHeader
+        buyer={
+          buyer
+            ? { email: buyer.email, provider: buyer.googleId ? "google" : "email" }
+            : null
+        }
+      />
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-8">
         {children}
       </main>
