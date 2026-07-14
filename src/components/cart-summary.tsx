@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { CartItem } from "@/lib/cart/types";
 
 type SummaryLine = Pick<
@@ -20,11 +21,13 @@ export function CartSummary({
   subtotal,
   onUpdateQuantity,
   onRemove,
+  afterItems,
 }: {
   items: SummaryLine[];
   subtotal: number;
   onUpdateQuantity?: (pizzaId: string, size: CartItem["size"], quantity: number) => void;
   onRemove?: (pizzaId: string, size: CartItem["size"]) => void;
+  afterItems?: ReactNode;
 }) {
   const editable = Boolean(onUpdateQuantity && onRemove);
 
@@ -79,6 +82,7 @@ export function CartSummary({
           </li>
         ))}
       </ul>
+      {afterItems}
       <div className="flex items-center justify-between text-lg font-semibold">
         <span>합계</span>
         <span>{formatPrice(subtotal)}</span>

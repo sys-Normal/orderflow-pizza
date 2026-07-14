@@ -47,10 +47,18 @@ export default function CartPage() {
         subtotal={subtotal}
         onUpdateQuantity={updateQuantity}
         onRemove={handleRemove}
+        afterItems={
+          <Link
+            href={`/menu?storeId=${items[0].storeId}`}
+            className="self-end rounded-full border border-black/[.08] px-5 py-2 text-sm font-medium transition-colors hover:border-primary hover:text-primary dark:border-white/[.145]"
+          >
+            메뉴 추가하기
+          </Link>
+        }
       />
       <Link
         href="/checkout"
-        className="self-start rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        className="self-end rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
       >
         주문하기
       </Link>
