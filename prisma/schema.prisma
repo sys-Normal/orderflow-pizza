@@ -51,9 +51,37 @@ model User {
   role         Role
   createdAt    DateTime @default(now())
 
-  stores Store[]
-  orders Order[]
-  cart   Cart?
+  // Populated when a buyer checks "이 배송지를 다음에도 사용하기" at checkout —
+  // prefills the checkout form next time. `recentAddress*` is updated on
+  // every successful order regardless of that checkbox, kept for future
+  // reuse (e.g. a "최근 배송지" shortcut) even though nothing reads it yet.
+  defaultAddressName  String?
+  defaultAddressPhone String?
+  defaultAddressLine  String?
+  recentAddressName   String?
+  recentAddressPhone  String?
+  recentAddressLine   String?
+
+  stores          Store[]
+  orders          Order[]
+  cart            Cart?
+  deliveryPresets DeliveryPreset[]
+}
+
+// Named delivery addresses (e.g. "집", "회사") a buyer can save and reuse at
+// checkout. Capped at 3 per user — enforced in src/lib/delivery/actions.ts,
+// not at the schema level.
+model DeliveryPreset {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  label     String
+  name      String
+  phone     String
+  address   String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 // Per-buyer saved cart so a logged-in account keeps its cart across

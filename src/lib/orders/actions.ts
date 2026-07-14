@@ -10,6 +10,7 @@ export async function createOrder(input: {
   items: OrderItem[];
   subtotal: number;
   customer: OrderCustomer;
+  rememberAddress?: boolean;
 }): Promise<Order> {
   // /checkout is gated in src/proxy.ts, but Server Actions can be invoked
   // directly and can drift out of matcher coverage — check here too (same
@@ -37,6 +38,26 @@ export async function createOrder(input: {
           quantity: item.quantity,
         })),
       },
+    },
+  });
+
+  // recentAddress* is tracked on every order regardless of the checkbox, for
+  // future reuse (e.g. a "최근 배송지" shortcut) even though nothing reads it
+  // yet; defaultAddress* only updates when the buyer opts in, and is what
+  // prefills the checkout form next time (see checkout/page.tsx).
+  await prisma.user.update({
+    where: { id: session.userId },
+    data: {
+      recentAddressName: input.customer.name,
+      recentAddressPhone: input.customer.phone,
+      recentAddressLine: input.customer.address,
+      ...(input.rememberAddress
+        ? {
+            defaultAddressName: input.customer.name,
+            defaultAddressPhone: input.customer.phone,
+            defaultAddressLine: input.customer.address,
+          }
+        : {}),
     },
   });
 
