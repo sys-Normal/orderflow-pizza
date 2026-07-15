@@ -31,7 +31,7 @@ export function MenuCategorySection({
         type="button"
         onClick={() => setExpanded((current) => !current)}
         aria-expanded={expanded}
-        className="flex w-full items-center justify-between text-left"
+        className="-mx-3 -my-2 flex w-[calc(100%+1.5rem)] items-center justify-between rounded-lg px-3 py-2 text-left transition-colors hover:bg-black/[.05] dark:hover:bg-white/[.08]"
       >
         <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
         <ChevronDown

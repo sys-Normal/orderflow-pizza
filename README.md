@@ -80,6 +80,8 @@
 
 사진 원본마다 노출·채도가 제각각이라 얇은 반투명 검정 오버레이(`bg-black/15`)를 깔아 톤을 통일했습니다. 카드 썸네일과 모달 히어로 이미지는 `PizzaPhoto` 컴포넌트(`src/components/pizza-photo.tsx`)로 공통화했고, `lightbox` prop으로 클릭 시 원본을 오버레이 없이 크게 보는 라이트박스 사용 여부를 제어합니다 — 목록의 작은 썸네일은 그냥 훑어보기용이라 꺼두고(클릭 무반응), "자세히 보기" 상세 모달의 큰 사진에서만 켜뒀습니다. 라이트박스가 켜진 사진 영역은 hover 시 커서가 돋보기(`cursor: zoom-in`) 모양으로 바뀌어 클릭하면 확대된다는 걸 미리 알려줍니다 — 우측 상단 닫기 버튼은 별도 요소라 이 영역에서 제외됩니다. Tailwind v4의 전역 `button { cursor: pointer }` 규칙(아래 "클릭 가능 요소 커서" 참고)보다 구체적인 커서를 보여줘야 해서 `!cursor-zoom-in`으로 우선순위를 높였습니다.
 
+카테고리 섹션 제목(`src/components/menu-category-section.tsx`)은 hover 시 배경색이 짧게(150ms) 전환되며 옅게 강조되어, 접고 펼 수 있는 영역이라는 걸 시각적으로 보여줍니다. hover 배경은 `width: 100%` 요소에 음수 마진만 주면 폭이 늘지 않고 한쪽으로만 밀리는 문제가 있어, `calc(100% + 1.5rem)`로 폭 자체를 넓혀 좌우 대칭으로 확장되도록 했습니다.
+
 ## UI 공통 요소
 
 - **다크/라이트 테마**: 기본값은 시스템 설정(`prefers-color-scheme`)을 따르고, 우측 상단 스위치로 수동 전환하면 그 이후로는 선택값이 `localStorage`에 저장되어 고정됩니다 (`src/lib/theme/theme.ts`). 다크모드 배경/서페이스 색상은 Material Design 다크 테마 규격(`#121212`, elevation에 따른 표면 색)을, 브랜드 컬러는 Google Blue 계열(라이트 `#1a73e8` / 다크 `#8ab4f8`)을 사용합니다. Tailwind의 `dark:` variant는 미디어 쿼리 대신 `.dark` 클래스 기준으로 동작하도록 커스터마이즈했습니다 (`@custom-variant dark`, `src/app/globals.css`). 테마 전환 시 깜빡임(FOUC)을 막기 위해 `<head>`에 직접 렌더링되는 블로킹 스크립트가 있습니다 (`src/app/layout.tsx`) — 처음엔 `next/script`(`beforeInteractive`)로 만들었는데, React가 SSR 시 넣어준 위치와 실제 호이스팅되는 `<head>` 위치가 달라 불필요한 하이드레이션 위험이 있어 순수 `<script dangerouslySetInnerHTML>`로 바꿨습니다.
