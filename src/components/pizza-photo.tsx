@@ -59,7 +59,7 @@ export function PizzaPhoto({
           type="button"
           onClick={() => setLightboxOpen(true)}
           aria-label={`${alt} 원본 사진 크게 보기`}
-          className={`relative block w-full ${aspectClassName} overflow-hidden bg-primary/10`}
+          className={`relative block w-full !cursor-zoom-in ${aspectClassName} overflow-hidden bg-primary/10`}
         >
           {photo}
         </button>
