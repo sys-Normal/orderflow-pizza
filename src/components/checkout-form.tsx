@@ -246,7 +246,7 @@ export function CheckoutForm({
             className="h-4 w-4 cursor-pointer accent-primary"
           />
           <label htmlFor="remember-address" className="text-sm">
-            이 배송지를 다음에도 사용하기
+            이 배송지 정보를 다음에도 사용하기
           </label>
         </div>
 
