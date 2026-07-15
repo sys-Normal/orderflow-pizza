@@ -10,6 +10,7 @@ type OrderRow = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
 function toOrder(row: OrderRow): Order {
   return {
     id: row.id,
+    storeId: row.storeId,
     status: row.status,
     subtotal: row.subtotal,
     createdAt: row.createdAt.toISOString(),

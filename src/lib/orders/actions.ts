@@ -63,6 +63,7 @@ export async function createOrder(input: {
 
   return {
     id: order.id,
+    storeId: order.storeId,
     status: order.status,
     subtotal: order.subtotal,
     createdAt: order.createdAt.toISOString(),

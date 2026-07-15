@@ -26,6 +26,7 @@ export type OrderCustomer = {
 
 export type Order = {
   id: string;
+  storeId: string;
   items: OrderItem[];
   customer: OrderCustomer;
   status: OrderStatus;

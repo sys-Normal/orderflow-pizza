@@ -51,7 +51,7 @@ export default async function ConfirmationPage({
       </div>
       <CartSummary items={order.items} subtotal={order.subtotal} />
       <Link
-        href="/menu"
+        href={`/menu?storeId=${order.storeId}`}
         className="self-start rounded-full border border-black/[.08] px-5 py-2 text-sm font-medium dark:border-white/[.145]"
       >
         메뉴로 돌아가기
