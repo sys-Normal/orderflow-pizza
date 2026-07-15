@@ -82,6 +82,8 @@
 
 카테고리 섹션 제목(`src/components/menu-category-section.tsx`)은 hover 시 배경색이 짧게(150ms) 전환되며 옅게 강조되어, 접고 펼 수 있는 영역이라는 걸 시각적으로 보여줍니다. hover 배경은 `width: 100%` 요소에 음수 마진만 주면 폭이 늘지 않고 한쪽으로만 밀리는 문제가 있어, `calc(100% + 1.5rem)`로 폭 자체를 넓혀 좌우 대칭으로 확장되도록 했습니다.
 
+각 메뉴 카드(`src/components/pizza-card.tsx`, `pizza-menu-card.tsx`)도 hover 시 테두리가 브랜드 색으로 짧게 전환되어, 카드 전체가 클릭 가능한 영역임을 보여줍니다. 카드 안의 "자세히 보기"·"장바구니 담기" 버튼은 각자 별도의 hover 스타일(테두리·배경색)을 갖고 있어 서로 다른 요소·다른 CSS 속성이라 충돌 없이 함께 동작합니다.
+
 ## UI 공통 요소
 
 - **다크/라이트 테마**: 기본값은 시스템 설정(`prefers-color-scheme`)을 따르고, 우측 상단 스위치로 수동 전환하면 그 이후로는 선택값이 `localStorage`에 저장되어 고정됩니다 (`src/lib/theme/theme.ts`). 다크모드 배경/서페이스 색상은 Material Design 다크 테마 규격(`#121212`, elevation에 따른 표면 색)을, 브랜드 컬러는 Google Blue 계열(라이트 `#1a73e8` / 다크 `#8ab4f8`)을 사용합니다. Tailwind의 `dark:` variant는 미디어 쿼리 대신 `.dark` 클래스 기준으로 동작하도록 커스터마이즈했습니다 (`@custom-variant dark`, `src/app/globals.css`). 테마 전환 시 깜빡임(FOUC)을 막기 위해 `<head>`에 직접 렌더링되는 블로킹 스크립트가 있습니다 (`src/app/layout.tsx`) — 처음엔 `next/script`(`beforeInteractive`)로 만들었는데, React가 SSR 시 넣어준 위치와 실제 호이스팅되는 `<head>` 위치가 달라 불필요한 하이드레이션 위험이 있어 순수 `<script dangerouslySetInnerHTML>`로 바꿨습니다.

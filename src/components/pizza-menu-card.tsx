@@ -18,7 +18,7 @@ export function PizzaMenuCard({
 
   return (
     <>
-      <div className="flex gap-4 rounded-lg border border-black/[.08] bg-surface p-4 dark:border-white/[.145]">
+      <div className="flex gap-4 rounded-lg border border-black/[.08] bg-surface p-4 transition-colors hover:border-primary dark:border-white/[.145]">
         <div className="h-24 w-24 shrink-0 overflow-hidden rounded-lg">
           <PizzaPhoto
             imageUrl={pizza.imageUrl}
