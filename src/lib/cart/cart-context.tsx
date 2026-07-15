@@ -15,6 +15,7 @@ import { createLocalStore } from "@/lib/create-local-store";
 import type { CartItem } from "@/lib/cart/types";
 import { saveCart } from "@/lib/cart/actions";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useToast } from "@/lib/toast/toast-context";
 
 const store = createLocalStore<CartItem[]>("orderflow_cart", []);
 
@@ -118,6 +119,7 @@ export function CartProvider({
     local: CartItem[];
     server: CartItem[];
   } | null>(null);
+  const { showToast } = useToast();
 
   // Reconcile the local (guest) cart with the account's saved cart whenever
   // the auth state settles. This must react to isLoggedIn *transitions*, not
@@ -182,14 +184,18 @@ export function CartProvider({
   // A cart can only hold items from one store at a time, since an order is
   // placed against a single storeId. Adding from a different store asks the
   // customer to confirm swapping the cart instead of silently mixing stores.
-  const addItem = useCallback((item: CartItem) => {
-    const currentStoreId = store.read()[0]?.storeId;
-    if (currentStoreId && currentStoreId !== item.storeId) {
-      setPendingItem(item);
-      return;
-    }
-    applyAddItem(item);
-  }, []);
+  const addItem = useCallback(
+    (item: CartItem) => {
+      const currentStoreId = store.read()[0]?.storeId;
+      if (currentStoreId && currentStoreId !== item.storeId) {
+        setPendingItem(item);
+        return;
+      }
+      applyAddItem(item);
+      showToast(`${item.name} 장바구니에 담았습니다`);
+    },
+    [showToast]
+  );
 
   const value = useMemo<CartContextValue>(() => {
     const subtotal = items.reduce(
@@ -222,6 +228,7 @@ export function CartProvider({
           onConfirm={() => {
             clearCart();
             applyAddItem(pendingItem);
+            showToast(`${pendingItem.name} 장바구니에 담았습니다`);
             setPendingItem(null);
           }}
           onCancel={() => setPendingItem(null)}

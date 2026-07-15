@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { PizzaPhoto } from "@/components/pizza-photo";
 import { useCart } from "@/lib/cart/cart-context";
-import { useToast } from "@/lib/toast/toast-context";
 import type { Pizza, PizzaSize } from "@/lib/menu/types";
 
 const SIZES: PizzaSize[] = ["S", "M", "L"];
@@ -26,7 +25,6 @@ export function PizzaDetailModal({
 }) {
   const [size, setSize] = useState<PizzaSize>("M");
   const { addItem } = useCart();
-  const { showToast } = useToast();
   // description is a comma-separated ingredient list (e.g. "토마토 소스,
   // 모차렐라, 바질"), so it doubles as a 성분표 without a schema change.
   const ingredients = pizza.description
@@ -121,7 +119,6 @@ export function PizzaDetailModal({
                   storeId,
                   storeName,
                 });
-                showToast(`${pizza.name} 장바구니에 담았습니다`);
                 onClose();
               }}
               className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"

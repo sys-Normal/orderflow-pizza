@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import type { Pizza } from "@/lib/menu/types";
 import { useCart } from "@/lib/cart/cart-context";
-import { useToast } from "@/lib/toast/toast-context";
 
 // Chicken/side/drink don't need a size choice, so this card always adds the
 // "M" tier — the underlying Pizza/CartItem type still carries S/M/L pricing,
@@ -25,7 +24,6 @@ export function PizzaCard({
 }) {
   const [pressed, setPressed] = useState(false);
   const { addItem } = useCart();
-  const { showToast } = useToast();
 
   useEffect(() => {
     if (!pressed) return;
@@ -59,7 +57,6 @@ export function PizzaCard({
               storeId,
               storeName,
             });
-            showToast(`${pizza.name} 장바구니에 담았습니다`);
             setPressed(true);
           }}
           className={`rounded-full px-4 py-2 text-sm font-medium text-primary-foreground transition-colors ${
