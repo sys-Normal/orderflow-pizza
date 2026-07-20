@@ -22,6 +22,7 @@ export function PizzaPhoto({
   lightbox?: boolean;
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!lightboxOpen) return;
@@ -44,7 +45,20 @@ export function PizzaPhoto({
 
   const photo = (
     <>
-      <Image src={imageUrl} alt={alt} fill sizes={sizes} className="object-cover" />
+      {/* Loading skeleton: plain CSS pulse, no extra bytes fetched. Sits
+          under the image and fades out once onLoad fires, so slow/out-of-
+          order image loads don't pop in inconsistently. */}
+      {!loaded && (
+        <div className="absolute inset-0 animate-pulse bg-primary/10" />
+      )}
+      <Image
+        src={imageUrl}
+        alt={alt}
+        fill
+        sizes={sizes}
+        className={`object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+        onLoad={() => setLoaded(true)}
+      />
       {/* Source photos vary a lot in exposure/saturation — a flat dark
           layer keeps them visually consistent and less harsh next to the
           muted card UI, regardless of theme. */}
