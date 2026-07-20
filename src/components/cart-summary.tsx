@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Minus, Plus, Trash2 } from "lucide-react";
 import type { CartItem } from "@/lib/cart/types";
 
 type SummaryLine = Pick<
@@ -51,28 +52,37 @@ export function CartSummary({
             </div>
             <div className="flex items-center gap-3">
               {editable ? (
-                <>
-                  <input
-                    type="number"
-                    min={1}
-                    value={line.quantity}
-                    onChange={(e) =>
-                      onUpdateQuantity?.(
-                        line.pizzaId,
-                        line.size,
-                        Number(e.target.value)
-                      )
-                    }
-                    className="w-16 rounded border border-black/[.08] bg-transparent px-2 py-1 text-sm dark:border-white/[.145]"
-                  />
+                <div className="flex items-center divide-x divide-black/[.08] rounded-full border border-black/[.08] dark:divide-white/[.145] dark:border-white/[.145]">
                   <button
                     type="button"
-                    onClick={() => onRemove?.(line.pizzaId, line.size)}
-                    className="text-sm text-red-600 dark:text-red-400"
+                    onClick={() =>
+                      line.quantity === 1
+                        ? onRemove?.(line.pizzaId, line.size)
+                        : onUpdateQuantity?.(line.pizzaId, line.size, line.quantity - 1)
+                    }
+                    aria-label={line.quantity === 1 ? "메뉴 삭제" : "수량 줄이기"}
+                    className="flex h-9 w-9 cursor-pointer items-center justify-center text-zinc-600 hover:text-primary dark:text-zinc-400"
                   >
-                    삭제
+                    {line.quantity === 1 ? (
+                      <Trash2 className="h-4 w-4" />
+                    ) : (
+                      <Minus className="h-4 w-4" />
+                    )}
                   </button>
-                </>
+                  <span className="flex h-9 w-9 items-center justify-center text-sm font-medium tabular-nums">
+                    {line.quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onUpdateQuantity?.(line.pizzaId, line.size, line.quantity + 1)
+                    }
+                    aria-label="수량 늘리기"
+                    className="flex h-9 w-9 cursor-pointer items-center justify-center text-zinc-600 hover:text-primary dark:text-zinc-400"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
               ) : (
                 <span className="font-medium">
                   {formatPrice(line.unitPrice * line.quantity)}
