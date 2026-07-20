@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -47,6 +47,23 @@ export function CheckoutForm({
   const [notes, setNotes] = useState("");
   const [rememberAddress, setRememberAddress] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Set only if router.push doesn't land within STUCK_NAVIGATION_MS of a
+  // successful createOrder — e.g. a dev-server restart (or, in production, a
+  // deploy) mid-session can leave the client on a stale route manifest where
+  // the RSC fetch for /confirmation succeeds but the router never commits
+  // it, so isSubmitting spins forever with no error to catch. The order
+  // already exists at that point, so give the buyer a plain-anchor escape
+  // hatch (a real navigation, not a client-router transition, so it works
+  // even if the router itself is what's stuck).
+  const [stuckOrderId, setStuckOrderId] = useState<string | null>(null);
+  const stuckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const STUCK_NAVIGATION_MS = 4000;
+
+  useEffect(() => {
+    return () => {
+      if (stuckTimerRef.current) clearTimeout(stuckTimerRef.current);
+    };
+  }, []);
 
   const [presets, setPresets] = useState(initialPresets);
 
@@ -81,6 +98,9 @@ export function CheckoutForm({
         rememberAddress,
       });
       clearCart();
+      stuckTimerRef.current = setTimeout(() => {
+        setStuckOrderId(order.id);
+      }, STUCK_NAVIGATION_MS);
       router.push(`/confirmation/${order.id}`);
     } catch {
       setIsSubmitting(false);
@@ -92,6 +112,24 @@ export function CheckoutForm({
   // flips items to [] and would otherwise flash that "cart is empty" view
   // for a moment before router.push finishes navigating away.
   if (isSubmitting) {
+    if (stuckOrderId) {
+      return (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background/80 p-4 text-center backdrop-blur-sm">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            주문은 정상적으로 접수되었지만 화면 이동이 지연되고 있습니다.
+          </p>
+          {/* Plain <a>, not <Link>: if the client router itself is what's
+              stuck, a Link transition would hang the same way. A full
+              navigation always gets there. */}
+          <a
+            href={`/confirmation/${stuckOrderId}`}
+            className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground"
+          >
+            주문 확인하기
+          </a>
+        </div>
+      );
+    }
     return <FullScreenLoading message="주문 처리 중..." />;
   }
 
