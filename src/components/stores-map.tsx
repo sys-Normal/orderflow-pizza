@@ -161,7 +161,13 @@ export function StoresMap({
       center={[center.latitude, center.longitude]}
       zoom={14}
       scrollWheelZoom={true}
-      className={`${className} rounded-lg`}
+      // isolate: Leaflet's own panes/controls use z-index up to 1000
+      // (leaflet.css), and .leaflet-container itself never establishes a
+      // stacking context, so those values otherwise compete directly with
+      // page UI like the header's user-menu dropdown (z-50) and win. This
+      // contains all of Leaflet's internal stacking within the map box
+      // regardless of what z-index page UI above it uses.
+      className={`${className} isolate rounded-lg`}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
