@@ -2,6 +2,7 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import type { Pizza } from "../src/lib/menu/types";
 import { hashPassword } from "../src/lib/auth/password";
+import { PROJECT_NAME } from "../src/lib/constants";
 
 const SEED_ACCOUNTS = [
   { email: "seller@orderflow.pizza", password: "seller1234!", role: "seller" as const },
@@ -168,13 +169,17 @@ async function main() {
     )
   );
 
+  // "본점" (not a district-suffixed branch name) so it doesn't collide with
+  // the dev-only nearby-branch generator's "${PROJECT_NAME} ${district}점"
+  // names (src/lib/stores/seed-nearby.ts) — this store predates that system.
+  const storeName = `${PROJECT_NAME} 본점`;
   const store = await prisma.store.upsert({
     where: { id: "orderflow-main" },
-    update: { latitude: 37.4979, longitude: 127.0276, status: "approved" },
+    update: { name: storeName, latitude: 37.4979, longitude: 127.0276, status: "approved" },
     create: {
       id: "orderflow-main",
       ownerId: owner.id,
-      name: "OrderFlow Pizza",
+      name: storeName,
       status: "approved",
       phone: "02-1234-5678",
       // Arbitrary real-world coordinate (Gangnam Station) for map display.

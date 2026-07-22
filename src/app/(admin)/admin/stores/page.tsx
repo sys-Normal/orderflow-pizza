@@ -2,8 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/current-user";
 import { getAllStoresWithOwner } from "@/lib/stores/queries";
+import { reverseGeocode } from "@/lib/stores/reverse-geocode";
 import { StoreStatusButtons } from "@/components/store-status-buttons";
-import { StoreMapLazy } from "@/components/store-map-lazy";
+import { StoreLocation } from "@/components/store-location";
 
 export default async function AdminStoresPage() {
   const session = await getSessionUser();
@@ -11,13 +12,16 @@ export default async function AdminStoresPage() {
   if (session.role !== "platform_admin") redirect("/admin/orders");
 
   const stores = await getAllStoresWithOwner();
+  const addresses = await Promise.all(
+    stores.map((store) => reverseGeocode(store.latitude, store.longitude))
+  );
 
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold tracking-tight">매장 관리</h1>
 
       <ul className="flex flex-col gap-4">
-        {stores.map((store) => (
+        {stores.map((store, index) => (
           <li
             key={store.id}
             className="flex flex-col gap-3 rounded-lg border border-black/[.08] bg-surface p-4 dark:border-white/[.145]"
@@ -37,11 +41,11 @@ export default async function AdminStoresPage() {
               </Link>
             </div>
             <StoreStatusButtons storeId={store.id} currentStatus={store.status} />
-            <StoreMapLazy
+            <StoreLocation
+              address={addresses[index] ?? `${store.latitude}, ${store.longitude}`}
               latitude={store.latitude}
               longitude={store.longitude}
               name={store.name}
-              className="h-40 w-full"
             />
           </li>
         ))}
