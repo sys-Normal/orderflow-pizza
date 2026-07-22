@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/current-user";
 import { getOrdersForSession } from "@/lib/orders/queries";
-import { OrderList } from "@/components/order-list";
+import { LiveOrderFeed } from "@/components/live-order-feed";
 
 export default async function AdminOrdersPage() {
   const session = await getSessionUser();
@@ -15,7 +15,7 @@ export default async function AdminOrdersPage() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold tracking-tight">주문 목록</h1>
-      <OrderList orders={orders} />
+      <LiveOrderFeed initialOrders={orders} />
     </div>
   );
 }

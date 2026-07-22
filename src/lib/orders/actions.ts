@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/current-user";
 import { orderInclude, toOrder } from "@/lib/orders/queries";
-import { emitOrderStatusEvent } from "@/lib/events";
+import { emitOrderStatusEvent, emitStoreOrderEvent } from "@/lib/events";
 import type { Order, OrderCustomer, OrderItem, OrderStatus } from "@/lib/orders/types";
 
 const STORE_ORDERS_PAGE_SIZE = 10;
@@ -97,7 +97,7 @@ export async function createOrder(input: {
     },
   });
 
-  return {
+  const result: Order = {
     id: order.id,
     storeId: order.storeId,
     status: order.status,
@@ -106,6 +106,8 @@ export async function createOrder(input: {
     customer: input.customer,
     items: input.items,
   };
+  emitStoreOrderEvent(order.storeId, { type: "created", order: result });
+  return result;
 }
 
 export async function updateOrderStatus(
@@ -123,7 +125,7 @@ export async function updateOrderStatus(
 
   const order = await prisma.order.findUnique({
     where: { id },
-    select: { store: { select: { ownerId: true } } },
+    select: { storeId: true, store: { select: { ownerId: true } } },
   });
   if (!order) {
     throw new Error("주문을 찾을 수 없습니다.");
@@ -140,7 +142,14 @@ export async function updateOrderStatus(
     where: { id },
     data: { status, statusHistory: { create: [{ status, changedAt }] } },
   });
-  emitOrderStatusEvent(id, { status, changedAt: changedAt.toISOString() });
+  const changedAtIso = changedAt.toISOString();
+  emitOrderStatusEvent(id, { status, changedAt: changedAtIso });
+  emitStoreOrderEvent(order.storeId, {
+    type: "status",
+    orderId: id,
+    status,
+    changedAt: changedAtIso,
+  });
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${id}`);
   revalidatePath("/admin/orders/search");

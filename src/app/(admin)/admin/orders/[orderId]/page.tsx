@@ -4,7 +4,7 @@ import { getSessionUser } from "@/lib/auth/current-user";
 import { getOrderForSession, getOrderStatusHistory } from "@/lib/orders/queries";
 import { CartSummary } from "@/components/cart-summary";
 import { OrderStatusButtons } from "@/components/order-status-buttons";
-import { OrderStatusHistory } from "@/components/order-status-history";
+import { OrderStatusTimeline } from "@/components/order-status-timeline";
 
 export default async function AdminOrderDetailPage({
   params,
@@ -62,8 +62,12 @@ export default async function AdminOrderDetailPage({
       </div>
 
       <div>
-        <h2 className="mb-2 font-medium">상태 변경 이력 (임시)</h2>
-        <OrderStatusHistory orderId={order.id} initialHistory={statusHistory} />
+        <h2 className="mb-2 font-medium">진행 상황</h2>
+        <OrderStatusTimeline
+          orderId={order.id}
+          initialStatus={order.status}
+          initialHistory={statusHistory}
+        />
       </div>
     </div>
   );

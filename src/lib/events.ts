@@ -1,10 +1,16 @@
 import { EventEmitter } from "node:events";
-import type { OrderStatus } from "@/lib/orders/types";
+import type { Order, OrderStatus } from "@/lib/orders/types";
 
 export type OrderStatusEvent = {
   status: OrderStatus;
   changedAt: string;
 };
+
+// Store-scoped: powers the seller's live "new order" feed (/admin/orders),
+// as opposed to OrderStatusEvent above which tracks one specific order.
+export type StoreOrderEvent =
+  | { type: "created"; order: Order }
+  | { type: "status"; orderId: string; status: OrderStatus; changedAt: string };
 
 // Cached on globalThis for the same reason as src/lib/db.ts's PrismaClient:
 // Next.js dev mode reloads modules on every request, and a fresh
@@ -34,6 +40,23 @@ export function subscribeToOrder(
   listener: (event: OrderStatusEvent) => void
 ): () => void {
   const channel = channelFor(orderId);
+  orderEvents.on(channel, listener);
+  return () => orderEvents.off(channel, listener);
+}
+
+function storeChannelFor(storeId: string): string {
+  return `store:${storeId}`;
+}
+
+export function emitStoreOrderEvent(storeId: string, event: StoreOrderEvent): void {
+  orderEvents.emit(storeChannelFor(storeId), event);
+}
+
+export function subscribeToStoreOrders(
+  storeId: string,
+  listener: (event: StoreOrderEvent) => void
+): () => void {
+  const channel = storeChannelFor(storeId);
   orderEvents.on(channel, listener);
   return () => orderEvents.off(channel, listener);
 }
