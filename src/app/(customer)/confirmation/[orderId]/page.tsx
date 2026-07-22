@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { CircleCheck } from "lucide-react";
-import { getOrder } from "@/lib/orders/queries";
+import { getOrder, getOrderStatusHistory } from "@/lib/orders/queries";
 import { CartSummary } from "@/components/cart-summary";
+import { OrderStatusTimeline } from "@/components/order-status-timeline";
 
 export default async function ConfirmationPage({
   params,
@@ -10,6 +11,7 @@ export default async function ConfirmationPage({
 }) {
   const { orderId } = await params;
   const order = await getOrder(orderId);
+  const statusHistory = order ? await getOrderStatusHistory(orderId) : [];
 
   if (!order) {
     return (
@@ -38,6 +40,11 @@ export default async function ConfirmationPage({
           주문번호: {order.id}
         </p>
       </div>
+      <OrderStatusTimeline
+        orderId={order.id}
+        initialStatus={order.status}
+        initialHistory={statusHistory}
+      />
       <div>
         <h2 className="mb-2 font-medium">배송 정보</h2>
         <p className="text-sm">{order.customer.name}</p>
