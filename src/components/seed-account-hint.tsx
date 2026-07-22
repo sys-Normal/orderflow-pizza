@@ -1,6 +1,7 @@
 "use client";
 
 import { useToast } from "@/lib/toast/toast-context";
+import { copyToClipboard } from "@/lib/clipboard";
 
 const SEED_ACCOUNTS = {
   seller: { label: "판매자", email: "seller@orderflow.pizza", password: "seller1234!" },
@@ -11,30 +12,6 @@ const SEED_ACCOUNTS = {
   },
   buyer: { label: "구매자", email: "buyer@orderflow.pizza", password: "buyer1234!" },
 } as const;
-
-async function copyToClipboard(value: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(value);
-    return true;
-  } catch {
-    // Clipboard API can be unavailable/denied (older browsers, some
-    // automated/sandboxed contexts) — fall back to the legacy technique.
-    try {
-      const textarea = document.createElement("textarea");
-      textarea.value = value;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-      const succeeded = document.execCommand("copy");
-      document.body.removeChild(textarea);
-      return succeeded;
-    } catch {
-      return false;
-    }
-  }
-}
 
 function CopyableCode({
   value,

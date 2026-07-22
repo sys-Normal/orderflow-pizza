@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { PROJECT_NAME } from "@/lib/constants";
 import { randomPointWithinRadiusKm } from "@/lib/stores/geo";
+import { generateUniqueContactEmail } from "@/lib/stores/contact-email";
 
 const BRANCH_DISTRICTS = [
   "강남",
@@ -48,6 +49,7 @@ export async function generateNearbyStores(
   const created = [];
   for (const name of names) {
     const point = randomPointWithinRadiusKm(latitude, longitude, radiusKm);
+    const contactEmail = await generateUniqueContactEmail(prisma);
     const branch = await prisma.store.create({
       data: {
         ownerId: reference.ownerId,
@@ -55,6 +57,7 @@ export async function generateNearbyStores(
         description: reference.description,
         status: "approved",
         phone: randomPhone(),
+        contactEmail,
         latitude: point.latitude,
         longitude: point.longitude,
         menuItems: {

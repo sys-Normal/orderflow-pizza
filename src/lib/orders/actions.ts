@@ -3,7 +3,37 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/current-user";
+import { orderInclude, toOrder } from "@/lib/orders/queries";
 import type { Order, OrderCustomer, OrderItem, OrderStatus } from "@/lib/orders/types";
+
+const STORE_ORDERS_PAGE_SIZE = 10;
+
+// Powers the store-list "주문 보기" modal (see store-orders-modal.tsx) — a
+// Client Component can't call queries.ts directly (no "use server"), so this
+// wraps the same paginated read as an invocable action.
+export async function getStoreOrdersPage(
+  storeId: string,
+  page: number
+): Promise<{ orders: Order[]; totalCount: number; page: number; pageSize: number }> {
+  const session = await getSessionUser();
+  if (!session || session.role !== "platform_admin") {
+    throw new Error("플랫폼 관리자만 조회할 수 있습니다.");
+  }
+
+  const pageSize = STORE_ORDERS_PAGE_SIZE;
+  const [rows, totalCount] = await Promise.all([
+    prisma.order.findMany({
+      where: { storeId },
+      include: orderInclude,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.order.count({ where: { storeId } }),
+  ]);
+
+  return { orders: rows.map(toOrder), totalCount, page, pageSize };
+}
 
 export async function createOrder(input: {
   storeId: string;
@@ -87,7 +117,7 @@ export async function updateOrderStatus(
 
   const order = await prisma.order.findUnique({
     where: { id },
-    select: { storeId: true, store: { select: { ownerId: true } } },
+    select: { store: { select: { ownerId: true } } },
   });
   if (!order) {
     throw new Error("주문을 찾을 수 없습니다.");
@@ -102,6 +132,5 @@ export async function updateOrderStatus(
   await prisma.order.update({ where: { id }, data: { status } });
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${id}`);
-  revalidatePath(`/admin/stores/${order.storeId}/orders`);
   revalidatePath("/admin/orders/search");
 }

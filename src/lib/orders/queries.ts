@@ -3,11 +3,11 @@ import type { Prisma } from "@/generated/prisma/client";
 import type { SessionPayload } from "@/lib/auth/session";
 import type { Order, OrderItem } from "@/lib/orders/types";
 
-const orderInclude = { items: true } satisfies Prisma.OrderInclude;
+export const orderInclude = { items: true } satisfies Prisma.OrderInclude;
 
 type OrderRow = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
 
-function toOrder(row: OrderRow): Order {
+export function toOrder(row: OrderRow): Order {
   return {
     id: row.id,
     storeId: row.storeId,

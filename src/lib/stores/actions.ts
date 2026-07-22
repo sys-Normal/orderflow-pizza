@@ -23,4 +23,5 @@ export async function updateStoreStatus(
 
   await prisma.store.update({ where: { id: storeId }, data: { status } });
   revalidatePath("/admin/stores");
+  revalidatePath(`/admin/stores/${storeId}`);
 }

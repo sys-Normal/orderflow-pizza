@@ -3,6 +3,7 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import type { Pizza } from "../src/lib/menu/types";
 import { hashPassword } from "../src/lib/auth/password";
 import { PROJECT_NAME } from "../src/lib/constants";
+import { generateUniqueContactEmail } from "../src/lib/stores/contact-email";
 
 const SEED_ACCOUNTS = [
   { email: "seller@orderflow.pizza", password: "seller1234!", role: "seller" as const },
@@ -182,6 +183,9 @@ async function main() {
       name: storeName,
       status: "approved",
       phone: "02-1234-5678",
+      // Only set on create — re-running the seed shouldn't reassign an
+      // already-backfilled store's contact email.
+      contactEmail: await generateUniqueContactEmail(prisma),
       // Arbitrary real-world coordinate (Gangnam Station) for map display.
       latitude: 37.4979,
       longitude: 127.0276,

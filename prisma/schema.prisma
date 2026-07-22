@@ -95,16 +95,17 @@ model Cart {
 }
 
 model Store {
-  id          String      @id @default(uuid())
-  ownerId     String
-  owner       User        @relation(fields: [ownerId], references: [id])
-  name        String
-  description String?
-  phone       String      @default("02-0000-0000")
-  status      StoreStatus @default(pending)
-  latitude    Float       @default(37.5665)
-  longitude   Float       @default(126.9780)
-  createdAt   DateTime    @default(now())
+  id           String      @id @default(uuid())
+  ownerId      String
+  owner        User        @relation(fields: [ownerId], references: [id])
+  name         String
+  description  String?
+  phone        String      @default("02-0000-0000")
+  contactEmail String      @unique
+  status       StoreStatus @default(pending)
+  latitude     Float       @default(37.5665)
+  longitude    Float       @default(126.9780)
+  createdAt    DateTime    @default(now())
 
   menuItems MenuItem[]
   orders    Order[]
@@ -152,11 +153,11 @@ model Order {
 }
 
 model OrderItem {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   orderId    String
-  order      Order    @relation(fields: [orderId], references: [id])
+  order      Order     @relation(fields: [orderId], references: [id])
   menuItemId String
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItem   MenuItem  @relation(fields: [menuItemId], references: [id])
   name       String
   size       PizzaSize
   unitPrice  Int
