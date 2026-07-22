@@ -23,6 +23,14 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   completed: "완료",
 };
 
+export const ORDER_STATUS_BADGE_CLASS: Record<OrderStatus, string> = {
+  received: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300",
+  preparing: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+  ready: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
+  delivering: "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-500/15 dark:text-fuchsia-300",
+  completed: "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300",
+};
+
 export type OrderStatusHistoryEntry = {
   status: OrderStatus;
   changedAt: string;

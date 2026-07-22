@@ -27,6 +27,8 @@ export function proxy(request: NextRequest) {
 
   // /checkout: guest browsing/cart is fine, but placing an order requires a
   // logged-in buyer. Redirect back here (via `next`) after login/signup.
+  // /orders (buyer's own order history) has no guest use case, so it's
+  // gated the same way.
   const sessionCookie = request.cookies.get(SESSION_COOKIE)?.value;
   const session = sessionCookie ? verifySessionValue(sessionCookie) : null;
   if (!session || session.role !== "buyer") {
@@ -39,5 +41,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/checkout/:path*"],
+  matcher: ["/admin/:path*", "/checkout/:path*", "/orders/:path*"],
 };

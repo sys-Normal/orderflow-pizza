@@ -4,20 +4,22 @@ import { SiteHeader } from "@/components/site-header";
 import { CartFloatingBar } from "@/components/cart-floating-bar";
 import { getSessionUser } from "@/lib/auth/current-user";
 import { getCartForUser } from "@/lib/cart/persistence";
+import { hasActiveOrder } from "@/lib/orders/queries";
 import { prisma } from "@/lib/db";
 
 export default async function CustomerLayout({ children }: { children: ReactNode }) {
   const session = await getSessionUser();
   const isBuyer = session?.role === "buyer";
-  const [buyer, initialServerCart] = isBuyer
+  const [buyer, initialServerCart, hasOrderInProgress] = isBuyer
     ? await Promise.all([
         prisma.user.findUnique({
           where: { id: session.userId },
           select: { email: true, googleId: true },
         }),
         getCartForUser(session.userId),
+        hasActiveOrder(session.userId),
       ])
-    : [null, []];
+    : [null, [], false];
 
   return (
     <CartProvider isLoggedIn={isBuyer} initialServerCart={initialServerCart}>
@@ -27,6 +29,7 @@ export default async function CustomerLayout({ children }: { children: ReactNode
             ? { email: buyer.email, provider: buyer.googleId ? "google" : "email" }
             : null
         }
+        hasActiveOrder={hasOrderInProgress}
       />
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-8">
         {children}

@@ -50,6 +50,7 @@ type CartContextValue = {
     quantity: number
   ) => void;
   clearCart: () => void;
+  replaceCart: (items: CartItem[]) => void;
   subtotal: number;
   itemCount: number;
 };
@@ -115,6 +116,7 @@ export function CartProvider({
     store.getServerSnapshot
   );
   const [pendingItem, setPendingItem] = useState<CartItem | null>(null);
+  const [pendingReorder, setPendingReorder] = useState<CartItem[] | null>(null);
   const [cartConflict, setCartConflict] = useState<{
     local: CartItem[];
     server: CartItem[];
@@ -197,6 +199,23 @@ export function CartProvider({
     [showToast]
   );
 
+  // Powers "재주문하기" (/orders) — unlike addItem, this always replaces
+  // the whole cart rather than merging line-by-line, since reordering a
+  // multi-item order while other items are already in the cart is exactly
+  // the "mixed, confusing cart" case a confirmation should catch, even if
+  // it happens to be the same store.
+  const replaceCart = useCallback(
+    (newItems: CartItem[]) => {
+      if (store.read().length > 0) {
+        setPendingReorder(newItems);
+        return;
+      }
+      store.write(newItems);
+      showToast("장바구니에 다시 담았습니다");
+    },
+    [showToast]
+  );
+
   const value = useMemo<CartContextValue>(() => {
     const subtotal = items.reduce(
       (sum, line) => sum + line.unitPrice * line.quantity,
@@ -209,10 +228,11 @@ export function CartProvider({
       removeItem,
       updateQuantity,
       clearCart,
+      replaceCart,
       subtotal,
       itemCount,
     };
-  }, [items, addItem]);
+  }, [items, addItem, replaceCart]);
 
   return (
     <CartContext.Provider value={value}>
@@ -232,6 +252,20 @@ export function CartProvider({
             setPendingItem(null);
           }}
           onCancel={() => setPendingItem(null)}
+        />
+      )}
+      {pendingReorder && (
+        <ConfirmDialog
+          title="장바구니 덮어쓰기"
+          message="장바구니에 이미 담긴 항목이 있어요. 비우고 이 주문 내용으로 다시 담을까요?"
+          confirmLabel="덮어쓰기"
+          cancelLabel="취소"
+          onConfirm={() => {
+            store.write(pendingReorder);
+            showToast("장바구니에 다시 담았습니다");
+            setPendingReorder(null);
+          }}
+          onCancel={() => setPendingReorder(null)}
         />
       )}
       {cartConflict && (

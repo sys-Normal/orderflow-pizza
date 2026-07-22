@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth/current-user";
 import { orderInclude, toOrder } from "@/lib/orders/queries";
 import { emitOrderStatusEvent, emitStoreOrderEvent } from "@/lib/events";
 import type { Order, OrderCustomer, OrderItem, OrderStatus } from "@/lib/orders/types";
+import type { CartItem } from "@/lib/cart/types";
 
 const STORE_ORDERS_PAGE_SIZE = 10;
 
@@ -108,6 +109,49 @@ export async function createOrder(input: {
   };
   emitStoreOrderEvent(order.storeId, { type: "created", order: result });
   return result;
+}
+
+// Powers "재주문하기" on /orders — reproduces the order's own recorded
+// items (name/size/price as they were then, not current menu pricing),
+// only reaching into MenuItem for `category`, which CartItem needs but
+// Order/OrderItem don't store. An item whose MenuItem was since deleted is
+// silently dropped rather than failing the whole reorder.
+export async function getReorderItems(orderId: string): Promise<CartItem[]> {
+  const session = await getSessionUser();
+  if (!session || session.role !== "buyer") {
+    throw new Error("로그인이 필요합니다.");
+  }
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { items: true, store: { select: { name: true } } },
+  });
+  if (!order || order.buyerId !== session.userId) {
+    throw new Error("주문을 찾을 수 없습니다.");
+  }
+
+  const menuItems = await prisma.menuItem.findMany({
+    where: { id: { in: order.items.map((item) => item.menuItemId) } },
+    select: { id: true, category: true },
+  });
+  const categoryById = new Map(menuItems.map((item) => [item.id, item.category]));
+
+  return order.items.flatMap((item) => {
+    const category = categoryById.get(item.menuItemId);
+    if (!category) return [];
+    return [
+      {
+        pizzaId: item.menuItemId,
+        name: item.name,
+        category,
+        size: item.size,
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+        storeId: order.storeId,
+        storeName: order.store.name,
+      } satisfies CartItem,
+    ];
+  });
 }
 
 export async function updateOrderStatus(

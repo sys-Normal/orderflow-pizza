@@ -75,6 +75,29 @@ export async function getOrderForSession(
   return row ? toOrder(row) : undefined;
 }
 
+// Buyer's own order history (see /orders) — the only way back to an order
+// once the buyer navigates away from its one-time /confirmation link. Also
+// carries the store name, since a buyer can order from several stores and
+// Order itself only has storeId.
+export async function getOrdersForBuyer(
+  buyerId: string
+): Promise<(Order & { storeName: string })[]> {
+  const rows = await prisma.order.findMany({
+    where: { buyerId },
+    include: { ...orderInclude, store: { select: { name: true } } },
+    orderBy: { createdAt: "desc" },
+  });
+  return rows.map((row) => ({ ...toOrder(row), storeName: row.store.name }));
+}
+
+// Powers the header's "order in progress" indicator (see site-header.tsx).
+export async function hasActiveOrder(buyerId: string): Promise<boolean> {
+  const count = await prisma.order.count({
+    where: { buyerId, status: { not: "completed" } },
+  });
+  return count > 0;
+}
+
 // Platform-admin drill-down: a single store's orders (not scoped to a
 // logged-in owner, since the admin is browsing someone else's store).
 export async function getOrdersForStore(storeId: string): Promise<Order[]> {

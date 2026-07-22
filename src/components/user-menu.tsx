@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { buyerLogoutAction } from "@/lib/auth/buyer-actions";
 
 // Temporary nickname until real profile settings exist — derived from the
@@ -79,6 +80,13 @@ export function UserMenu({
               >
                 설정
               </button>
+              <Link
+                href="/orders"
+                onClick={() => setOpen(false)}
+                className="rounded px-2 py-1.5 text-left text-sm transition-colors hover:bg-black/[.05] dark:hover:bg-white/[.08]"
+              >
+                주문 내역
+              </Link>
               <form action={buyerLogoutAction}>
                 <button
                   type="submit"

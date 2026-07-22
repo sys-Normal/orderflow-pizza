@@ -2,14 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Pizza, ShoppingCart, User } from "lucide-react";
+import { ChefHat, Pizza, ShoppingCart, User } from "lucide-react";
 import { useCart } from "@/lib/cart/cart-context";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 
 export type BuyerAccount = { email: string; provider: "email" | "google" };
 
-export function SiteHeader({ buyer }: { buyer?: BuyerAccount | null }) {
+export function SiteHeader({
+  buyer,
+  hasActiveOrder = false,
+}: {
+  buyer?: BuyerAccount | null;
+  hasActiveOrder?: boolean;
+}) {
   const { itemCount } = useCart();
   const pathname = usePathname();
 
@@ -24,6 +30,15 @@ export function SiteHeader({ buyer }: { buyer?: BuyerAccount | null }) {
           OrderFlow Pizza
         </Link>
         <nav className="flex items-center gap-4 text-sm font-medium">
+          {hasActiveOrder && (
+            <Link
+              href="/orders"
+              aria-label="진행 중인 주문 보기"
+              title="진행 중인 주문이 있습니다"
+            >
+              <ChefHat className="h-6 w-6 text-primary" />
+            </Link>
+          )}
           <Link
             href="/cart"
             aria-label={`장바구니, ${itemCount}개 항목`}

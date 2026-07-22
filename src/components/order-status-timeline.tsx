@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import {
   ORDER_STATUS_LABELS,
@@ -58,8 +58,8 @@ export function OrderStatusTimeline({
           const isCurrent = index === currentIndex;
           const changedAt = changedAtByStatus.get(status);
           return (
-            <div key={status} className="flex flex-1 items-center last:flex-none">
-              <div className="flex flex-col items-center gap-1">
+            <Fragment key={status}>
+              <div className="flex w-16 shrink-0 flex-col items-center gap-2">
                 <div
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-xs font-semibold ${
                     done
@@ -69,27 +69,44 @@ export function OrderStatusTimeline({
                 >
                   {done ? <Check className="h-4 w-4" /> : index + 1}
                 </div>
+                {/* Fixed-width column (not whitespace-nowrap) so a long
+                    label like "배달/픽업 준비완료" wraps onto a second line
+                    instead of stretching this step wider than the rest —
+                    every column takes equal space either way, which is
+                    what actually keeps the connector lines even. */}
                 <span
-                  className={`whitespace-nowrap text-center text-xs ${
+                  className={`break-keep text-center text-xs leading-tight ${
                     done ? "font-medium text-foreground" : "text-zinc-400"
                   }`}
                 >
                   {ORDER_STATUS_LABELS[status]}
                 </span>
-                <span className="h-4 text-[10px] text-zinc-400">
-                  {changedAt ? new Date(changedAt).toLocaleTimeString("ko-KR") : ""}
+                <span className="h-4 text-xs text-zinc-400">
+                  {changedAt
+                    ? new Date(changedAt).toLocaleTimeString("ko-KR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })
+                    : ""}
                 </span>
               </div>
+              {/* Sibling of the column above (not nested inside a
+                  per-step flex-1 wrapper) so every connector shares the
+                  same leftover space equally, regardless of how wide any
+                  one step's label is. mt-[15px] centers it on the h-8
+                  circle (16px from the row's top) rather than the whole
+                  column. */}
               {index < STATUS_ORDER.length - 1 && (
                 <div
-                  className={`mx-1 mb-4 h-0.5 flex-1 ${
+                  className={`mx-1 mt-[15px] h-0.5 flex-1 ${
                     index < currentIndex
                       ? "bg-primary"
                       : "bg-black/[.1] dark:bg-white/[.15]"
                   }`}
                 />
               )}
-            </div>
+            </Fragment>
           );
         })}
       </div>
