@@ -26,27 +26,29 @@
 
 ## 우선순위 순서 (P0부터 순서대로 진행)
 
-### P0 — 데이터 모델: 5단계 상태 + 변경 이력 저장
-- [ ] `OrderStatus` enum에 `delivering` 추가 (`ready`와 `completed` 사이).
-- [ ] `OrderStatusHistory` 모델 추가 (Prisma): `id`, `orderId`, `status`, `changedAt`. `Order`와 1:N.
-- [ ] 마이그레이션 생성 및 적용.
-- [ ] `ORDER_STATUS_LABELS`, `order-status-buttons.tsx`의 상태 목록에 "배달중" 반영.
-- [ ] `createOrder` 액션에서 주문 생성 시 최초 이력 행(`status: "received"`) 함께 기록.
-- [ ] `updateOrderStatus` 액션에서 상태 변경마다 이력 행 추가.
-- [ ] `getOrderStatusHistory(orderId)` 쿼리 함수 작성 (시간순 정렬).
-- [ ] 임시로 `/admin/orders/[orderId]`에 이력을 그대로 나열하는 단순 목록 추가 (P3에서 정식 타임라인으로 교체 예정 — 지금은 P0이 실제로 기록되는지 눈으로 확인하기 위한 용도).
+### P0 — 데이터 모델: 5단계 상태 + 변경 이력 저장 ✅ 완료 (2026-07-22)
+- [x] `OrderStatus` enum에 `delivering` 추가 (`ready`와 `completed` 사이).
+- [x] `OrderStatusHistory` 모델 추가 (Prisma): `id`, `orderId`, `status`, `changedAt`. `Order`와 1:N.
+- [x] 마이그레이션 생성 및 적용.
+- [x] `ORDER_STATUS_LABELS`, `order-status-buttons.tsx`의 상태 목록에 "배달중" 반영.
+- [x] `createOrder` 액션에서 주문 생성 시 최초 이력 행(`status: "received"`) 함께 기록.
+- [x] `updateOrderStatus` 액션에서 상태 변경마다 이력 행 추가.
+- [x] `getOrderStatusHistory(orderId)` 쿼리 함수 작성 (시간순 정렬).
+- [x] 임시로 `/admin/orders/[orderId]`에 이력을 그대로 나열하는 단순 목록 추가 (P3에서 정식 타임라인으로 교체 예정 — 지금은 P0이 실제로 기록되는지 눈으로 확인하기 위한 용도).
 
 **이 단계 없이는 "내역"이라는 개념 자체가 성립하지 않으므로 반드시 먼저 완료.**
 
 **테스트 방법:** 관리자로 로그인 → 아무 주문 상세 페이지에서 상태 버튼을 "조리중"→"준비완료"→"배달중"→"완료" 순서로 눌러본다. 누를 때마다 페이지 하단 임시 이력 목록에 줄이 하나씩 쌓이면 통과.
+→ **확인됨**: 기존 주문에서 4단계 클릭 시 시간과 함께 순서대로 쌓임, 신규 체크아웃 주문에도 "접수됨" 초기 이력이 자동으로 남음.
 
-### P1 — 실시간 인프라 (backlog.md 가이드 적용)
-- [ ] `src/lib/events.ts`: 서버 내 이벤트버스(EventEmitter 싱글턴), `emitOrderEvent(orderId, event)` 헬퍼.
-- [ ] `updateOrderStatus`에서 이력 기록 후 이벤트 발행.
-- [ ] SSE 라우트 핸들러 `/api/orders/[orderId]/stream` — 세션이 해당 주문의 구매자(또는 담당 매장의 판매자/관리자)인지 확인 후 구독 허용.
-- [ ] 클라이언트 공용 훅(`useOrderStream` 등): `EventSource` 구독, 메시지 수신 시 상태/이력 갱신, 재연결 시 스냅샷 재조회로 유실 구간 보정.
+### P1 — 실시간 인프라 (backlog.md 가이드 적용) ✅ 완료 (2026-07-22)
+- [x] `src/lib/events.ts`: 서버 내 이벤트버스(EventEmitter 싱글턴), `emitOrderStatusEvent`/`subscribeToOrder` 헬퍼.
+- [x] `updateOrderStatus`에서 이력 기록 후 이벤트 발행.
+- [x] SSE 라우트 핸들러 `/api/orders/[orderId]/stream` — 세션이 해당 주문의 구매자(또는 담당 매장의 판매자/관리자)인지 확인 후 구독 허용.
+- [x] 클라이언트 컴포넌트([order-status-history.tsx](../src/components/order-status-history.tsx)): `EventSource` 구독, 메시지 수신 시 이력에 새 항목 추가. (재연결 시 스냅샷 재조회 보정은 P2/P3에서 실제 UI 붙일 때 함께 처리 — 지금은 P0 임시 목록에 실시간만 얹은 상태)
 
 **테스트 방법:** 브라우저 개발자도구 Network 탭에서 `/api/orders/{id}/stream` 요청이 `eventsource` 타입으로 계속 연결된 상태(pending)인지 확인. 다른 탭(또는 관리자 화면)에서 그 주문 상태를 바꾸고, 새로고침 없이 이 탭에 이벤트가 도착하는지(Network 탭의 EventStream 서브탭에 메시지가 찍히는지) 확인.
+→ **확인됨**: 같은 주문 상세 페이지를 두 탭에 띄우고 한쪽에서 상태를 바꾸니 반대쪽 탭에 새로고침 없이 이력이 즉시 추가됨.
 
 ### P2 — 구매자용 배달 추적 UI
 - [ ] `/confirmation/[orderId]`에 상태 타임라인 컴포넌트 추가 — 지난 이력은 타임스탬프와 함께, 현재 상태는 강조 표시.

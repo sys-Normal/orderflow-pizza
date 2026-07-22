@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/current-user";
 import { orderInclude, toOrder } from "@/lib/orders/queries";
+import { emitOrderStatusEvent } from "@/lib/events";
 import type { Order, OrderCustomer, OrderItem, OrderStatus } from "@/lib/orders/types";
 
 const STORE_ORDERS_PAGE_SIZE = 10;
@@ -134,10 +135,12 @@ export async function updateOrderStatus(
     throw new Error("이 주문에 대한 권한이 없습니다.");
   }
 
+  const changedAt = new Date();
   await prisma.order.update({
     where: { id },
-    data: { status, statusHistory: { create: [{ status }] } },
+    data: { status, statusHistory: { create: [{ status, changedAt }] } },
   });
+  emitOrderStatusEvent(id, { status, changedAt: changedAt.toISOString() });
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${id}`);
   revalidatePath("/admin/orders/search");
