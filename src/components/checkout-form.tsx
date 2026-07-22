@@ -47,15 +47,22 @@ export function CheckoutForm({
   const [notes, setNotes] = useState("");
   const [rememberAddress, setRememberAddress] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Set only if router.push doesn't land within STUCK_NAVIGATION_MS of a
-  // successful createOrder — e.g. a dev-server restart (or, in production, a
-  // deploy) mid-session can leave the client on a stale route manifest where
-  // the RSC fetch for /confirmation succeeds but the router never commits
-  // it, so isSubmitting spins forever with no error to catch. The order
-  // already exists at that point, so give the buyer a plain-anchor escape
-  // hatch (a real navigation, not a client-router transition, so it works
-  // even if the router itself is what's stuck).
-  const [stuckOrderId, setStuckOrderId] = useState<string | null>(null);
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
+  // Only flips to true if router.push hasn't landed within
+  // STUCK_NAVIGATION_MS — i.e. an actual stall, not the ordinary (near-
+  // instant) case. Keeps the "delayed" message from doubling as a generic
+  // loading string: the spinner alone covers loading, this covers "something
+  // is actually wrong."
+  const [isDelayed, setIsDelayed] = useState(false);
+  // A dev-server restart (or, in production, a deploy) mid-session can leave
+  // the client on a stale route manifest where the RSC fetch for
+  // /confirmation succeeds but the router never commits it, so router.push
+  // silently never lands — no error to catch, isSubmitting would spin
+  // forever. If that hasn't resolved within STUCK_NAVIGATION_MS, surface the
+  // stall and fall back to a real (non-router) navigation automatically — a
+  // plain assignment always gets there even if the router itself is stuck,
+  // and unlike a client-side transition it isn't instant, so there's time
+  // for the buyer to actually see the message before the page swaps.
   const stuckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const STUCK_NAVIGATION_MS = 4000;
 
@@ -98,10 +105,13 @@ export function CheckoutForm({
         rememberAddress,
       });
       clearCart();
+      setCreatedOrderId(order.id);
+      const confirmationUrl = `/confirmation/${order.id}`;
       stuckTimerRef.current = setTimeout(() => {
-        setStuckOrderId(order.id);
+        setIsDelayed(true);
+        window.location.href = confirmationUrl;
       }, STUCK_NAVIGATION_MS);
-      router.push(`/confirmation/${order.id}`);
+      router.push(confirmationUrl);
     } catch {
       setIsSubmitting(false);
       showToast("주문에 실패했습니다. 다시 시도해주세요.");
@@ -112,25 +122,23 @@ export function CheckoutForm({
   // flips items to [] and would otherwise flash that "cart is empty" view
   // for a moment before router.push finishes navigating away.
   if (isSubmitting) {
-    if (stuckOrderId) {
-      return (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background/80 p-4 text-center backdrop-blur-sm">
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            주문은 정상적으로 접수되었지만 화면 이동이 지연되고 있습니다.
-          </p>
-          {/* Plain <a>, not <Link>: if the client router itself is what's
-              stuck, a Link transition would hang the same way. A full
-              navigation always gets there. */}
-          <a
-            href={`/confirmation/${stuckOrderId}`}
-            className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground"
-          >
-            주문 확인하기
-          </a>
-        </div>
-      );
-    }
-    return <FullScreenLoading message="주문 처리 중..." />;
+    return (
+      <FullScreenLoading
+        message={
+          isDelayed ? "예상치 못한 이유로 페이지 이동이 지연되고 있습니다." : "주문 처리 중..."
+        }
+        action={
+          isDelayed && createdOrderId ? (
+            <a
+              href={`/confirmation/${createdOrderId}`}
+              className="text-sm font-medium text-primary underline underline-offset-2"
+            >
+              주문 확인하기
+            </a>
+          ) : undefined
+        }
+      />
+    );
   }
 
   if (items.length === 0) {
