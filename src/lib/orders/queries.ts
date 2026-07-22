@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import type { SessionPayload } from "@/lib/auth/session";
-import type { Order, OrderItem } from "@/lib/orders/types";
+import type { Order, OrderItem, OrderStatusHistoryEntry } from "@/lib/orders/types";
 
 export const orderInclude = { items: true } satisfies Prisma.OrderInclude;
 
@@ -84,6 +84,19 @@ export async function getOrdersForStore(storeId: string): Promise<Order[]> {
     orderBy: { createdAt: "desc" },
   });
   return rows.map(toOrder);
+}
+
+export async function getOrderStatusHistory(
+  orderId: string
+): Promise<OrderStatusHistoryEntry[]> {
+  const rows = await prisma.orderStatusHistory.findMany({
+    where: { orderId },
+    orderBy: { changedAt: "asc" },
+  });
+  return rows.map((row) => ({
+    status: row.status,
+    changedAt: row.changedAt.toISOString(),
+  }));
 }
 
 // Platform-admin cross-store lookup for the rare "find this one order"

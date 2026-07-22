@@ -68,6 +68,11 @@ export async function createOrder(input: {
           quantity: item.quantity,
         })),
       },
+      // Seeds the status timeline (see OrderStatusHistory) with the
+      // "received" entry every order starts at, so history is never empty.
+      statusHistory: {
+        create: [{ status: "received" }],
+      },
     },
   });
 
@@ -129,7 +134,10 @@ export async function updateOrderStatus(
     throw new Error("이 주문에 대한 권한이 없습니다.");
   }
 
-  await prisma.order.update({ where: { id }, data: { status } });
+  await prisma.order.update({
+    where: { id },
+    data: { status, statusHistory: { create: [{ status }] } },
+  });
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${id}`);
   revalidatePath("/admin/orders/search");

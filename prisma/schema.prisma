@@ -27,6 +27,7 @@ enum OrderStatus {
   received
   preparing
   ready
+  delivering
   completed
 }
 
@@ -146,10 +147,21 @@ model Order {
   customerAddress String
   customerNotes   String?
 
-  items OrderItem[]
+  items         OrderItem[]
+  statusHistory OrderStatusHistory[]
 
   @@index([storeId])
   @@index([buyerId])
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(uuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id])
+  status    OrderStatus
+  changedAt DateTime    @default(now())
+
+  @@index([orderId])
 }
 
 model OrderItem {

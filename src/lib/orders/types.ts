@@ -8,13 +8,24 @@ export type OrderItem = {
   quantity: number;
 };
 
-export type OrderStatus = "received" | "preparing" | "ready" | "completed";
+export type OrderStatus =
+  | "received"
+  | "preparing"
+  | "ready"
+  | "delivering"
+  | "completed";
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   received: "접수됨",
   preparing: "조리중",
   ready: "배달/픽업 준비완료",
+  delivering: "배달중",
   completed: "완료",
+};
+
+export type OrderStatusHistoryEntry = {
+  status: OrderStatus;
+  changedAt: string;
 };
 
 export type OrderCustomer = {

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/current-user";
-import { getOrderForSession } from "@/lib/orders/queries";
+import { getOrderForSession, getOrderStatusHistory } from "@/lib/orders/queries";
+import { ORDER_STATUS_LABELS } from "@/lib/orders/types";
 import { CartSummary } from "@/components/cart-summary";
 import { OrderStatusButtons } from "@/components/order-status-buttons";
 
@@ -14,6 +15,7 @@ export default async function AdminOrderDetailPage({
   const session = await getSessionUser();
   if (!session) redirect("/admin/login");
   const order = await getOrderForSession(orderId, session);
+  const statusHistory = order ? await getOrderStatusHistory(orderId) : [];
 
   if (!order) {
     return (
@@ -57,6 +59,21 @@ export default async function AdminOrderDetailPage({
       <div>
         <h2 className="mb-2 font-medium">상태</h2>
         <OrderStatusButtons orderId={order.id} currentStatus={order.status} />
+      </div>
+
+      {/* Temporary plain list (P0 of docs/realtime-delivery-tracking.md) —
+          just here to confirm history rows are actually being recorded.
+          P3 replaces this with a proper timeline UI. */}
+      <div>
+        <h2 className="mb-2 font-medium">상태 변경 이력 (임시)</h2>
+        <ul className="flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-400">
+          {statusHistory.map((entry, index) => (
+            <li key={index}>
+              {new Date(entry.changedAt).toLocaleString("ko-KR")} —{" "}
+              {ORDER_STATUS_LABELS[entry.status]}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

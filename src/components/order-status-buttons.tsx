@@ -5,7 +5,13 @@ import { updateOrderStatus } from "@/lib/orders/actions";
 import { ORDER_STATUS_LABELS, type OrderStatus } from "@/lib/orders/types";
 import { FullScreenLoading } from "@/components/full-screen-loading";
 
-const STATUSES: OrderStatus[] = ["received", "preparing", "ready", "completed"];
+const STATUSES: OrderStatus[] = [
+  "received",
+  "preparing",
+  "ready",
+  "delivering",
+  "completed",
+];
 
 export function OrderStatusButtons({
   orderId,
