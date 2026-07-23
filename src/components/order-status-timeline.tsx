@@ -3,18 +3,11 @@
 import { Fragment, useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import {
+  ORDER_STATUS_FLOW as STATUS_ORDER,
   ORDER_STATUS_LABELS,
   type OrderStatus,
   type OrderStatusHistoryEntry,
 } from "@/lib/orders/types";
-
-const STATUS_ORDER: OrderStatus[] = [
-  "received",
-  "preparing",
-  "ready",
-  "delivering",
-  "completed",
-];
 
 export function OrderStatusTimeline({
   orderId,
@@ -45,10 +38,31 @@ export function OrderStatusTimeline({
     return () => source.close();
   }, [orderId]);
 
-  const currentIndex = STATUS_ORDER.indexOf(currentStatus);
   const changedAtByStatus = new Map(
     history.map((entry) => [entry.status, entry.changedAt])
   );
+
+  // Cancelled is a terminal side-branch, not a step in STATUS_ORDER — the
+  // step indicator wouldn't have a meaningful position for it.
+  if (currentStatus === "cancelled") {
+    const changedAt = changedAtByStatus.get("cancelled");
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+        <span className="font-medium">{ORDER_STATUS_LABELS.cancelled} · 이 주문은 거절되었습니다</span>
+        {changedAt && (
+          <span className="text-xs opacity-80">
+            {new Date(changedAt).toLocaleTimeString("ko-KR", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            })}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  const currentIndex = STATUS_ORDER.indexOf(currentStatus);
 
   return (
     <div className="flex flex-col gap-4">

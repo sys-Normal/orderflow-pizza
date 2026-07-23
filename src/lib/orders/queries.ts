@@ -93,7 +93,7 @@ export async function getOrdersForBuyer(
 // Powers the header's "order in progress" indicator (see site-header.tsx).
 export async function hasActiveOrder(buyerId: string): Promise<boolean> {
   const count = await prisma.order.count({
-    where: { buyerId, status: { not: "completed" } },
+    where: { buyerId, status: { notIn: ["completed", "cancelled"] } },
   });
   return count > 0;
 }

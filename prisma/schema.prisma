@@ -29,6 +29,7 @@ enum OrderStatus {
   ready
   delivering
   completed
+  cancelled
 }
 
 enum PizzaSize {

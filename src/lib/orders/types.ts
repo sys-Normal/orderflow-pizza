@@ -13,7 +13,8 @@ export type OrderStatus =
   | "preparing"
   | "ready"
   | "delivering"
-  | "completed";
+  | "completed"
+  | "cancelled";
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   received: "접수됨",
@@ -21,6 +22,7 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   ready: "배달/픽업 준비완료",
   delivering: "배달중",
   completed: "완료",
+  cancelled: "거절됨",
 };
 
 export const ORDER_STATUS_BADGE_CLASS: Record<OrderStatus, string> = {
@@ -29,6 +31,26 @@ export const ORDER_STATUS_BADGE_CLASS: Record<OrderStatus, string> = {
   ready: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
   delivering: "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-500/15 dark:text-fuchsia-300",
   completed: "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300",
+  cancelled: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300",
+};
+
+// Linear progress flow a seller drives an order through — cancelled is a
+// terminal side-branch, not a step in this sequence (see order-status-timeline.tsx).
+export const ORDER_STATUS_FLOW: OrderStatus[] = [
+  "received",
+  "preparing",
+  "ready",
+  "delivering",
+  "completed",
+];
+
+// Powers the single "다음 단계" action button on each order-list row: the
+// label names the action the seller takes, not the resulting status.
+export const ORDER_NEXT_ACTION: Partial<Record<OrderStatus, { next: OrderStatus; label: string }>> = {
+  received: { next: "preparing", label: "주문 수락" },
+  preparing: { next: "ready", label: "조리 완료" },
+  ready: { next: "delivering", label: "배달 시작" },
+  delivering: { next: "completed", label: "배달 완료" },
 };
 
 export type OrderStatusHistoryEntry = {
