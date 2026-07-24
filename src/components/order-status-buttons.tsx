@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { updateOrderStatus } from "@/lib/orders/actions";
 import {
   ORDER_STATUS_FLOW as STATUSES,
@@ -8,6 +8,7 @@ import {
   type OrderStatus,
 } from "@/lib/orders/types";
 import { FullScreenLoading } from "@/components/full-screen-loading";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export function OrderStatusButtons({
   orderId,
@@ -17,11 +18,7 @@ export function OrderStatusButtons({
   currentStatus: OrderStatus;
 }) {
   const [isPending, startTransition] = useTransition();
-
-  function handleCancel() {
-    if (!window.confirm("이 주문을 거절하시겠습니까?")) return;
-    startTransition(() => updateOrderStatus(orderId, "cancelled"));
-  }
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -47,11 +44,24 @@ export function OrderStatusButtons({
         <button
           type="button"
           disabled={isPending}
-          onClick={handleCancel}
+          onClick={() => setConfirmingCancel(true)}
           className="rounded-full border border-rose-300 px-3 py-1 text-sm text-rose-600 disabled:opacity-50 dark:border-rose-500/40 dark:text-rose-400"
         >
           {ORDER_STATUS_LABELS.cancelled}
         </button>
+      )}
+      {confirmingCancel && (
+        <ConfirmDialog
+          title="주문 거절"
+          message="이 주문을 거절하시겠습니까?"
+          confirmLabel="거절"
+          cancelLabel="취소"
+          onConfirm={() => {
+            setConfirmingCancel(false);
+            startTransition(() => updateOrderStatus(orderId, "cancelled"));
+          }}
+          onCancel={() => setConfirmingCancel(false)}
+        />
       )}
     </div>
   );

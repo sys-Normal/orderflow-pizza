@@ -1,8 +1,9 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { updateOrderStatus } from "@/lib/orders/actions";
 import { ORDER_NEXT_ACTION, type OrderStatus } from "@/lib/orders/types";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 // Single dynamic-label action button per order-list row (see decision-log
 // for why not a full status-picker here — that stays on the detail page).
@@ -14,12 +15,8 @@ export function OrderRowActions({
   status: OrderStatus;
 }) {
   const [isPending, startTransition] = useTransition();
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
   const nextAction = ORDER_NEXT_ACTION[status];
-
-  function handleCancel() {
-    if (!window.confirm("이 주문을 거절하시겠습니까?")) return;
-    startTransition(() => updateOrderStatus(orderId, "cancelled"));
-  }
 
   function handleAdvance() {
     if (!nextAction) return;
@@ -34,7 +31,7 @@ export function OrderRowActions({
         <button
           type="button"
           disabled={isPending}
-          onClick={handleCancel}
+          onClick={() => setConfirmingCancel(true)}
           className="rounded-full border border-rose-300 px-3 py-1.5 text-sm text-rose-600 disabled:opacity-50 dark:border-rose-500/40 dark:text-rose-400"
         >
           거절
@@ -48,6 +45,19 @@ export function OrderRowActions({
       >
         {nextAction.label}
       </button>
+      {confirmingCancel && (
+        <ConfirmDialog
+          title="주문 거절"
+          message="이 주문을 거절하시겠습니까?"
+          confirmLabel="거절"
+          cancelLabel="취소"
+          onConfirm={() => {
+            setConfirmingCancel(false);
+            startTransition(() => updateOrderStatus(orderId, "cancelled"));
+          }}
+          onCancel={() => setConfirmingCancel(false)}
+        />
+      )}
     </div>
   );
 }
