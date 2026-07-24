@@ -37,5 +37,5 @@ export function LiveOrderFeed({ initialOrders }: { initialOrders: Order[] }) {
     return () => source.close();
   }, []);
 
-  return <OrderList orders={orders} />;
+  return <OrderList orders={orders} showActions />;
 }
