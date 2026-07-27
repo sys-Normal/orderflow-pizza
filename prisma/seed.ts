@@ -170,9 +170,6 @@ async function main() {
     )
   );
 
-  // "본점" (not a district-suffixed branch name) so it doesn't collide with
-  // the dev-only nearby-branch generator's "${PROJECT_NAME} ${district}점"
-  // names (src/lib/stores/seed-nearby.ts) — this store predates that system.
   const storeName = `${PROJECT_NAME} 본점`;
   const store = await prisma.store.upsert({
     where: { id: "orderflow-main" },
@@ -216,16 +213,6 @@ async function main() {
         imageUrl: item.imageUrl,
       },
     });
-
-    // Local-dev "nearby" clone stores (src/lib/stores/seed-nearby.ts) copy
-    // menu items by name into their own rows with their own ids, so they
-    // don't get touched by the upsert above — backfill them here too.
-    if (item.imageUrl) {
-      await prisma.menuItem.updateMany({
-        where: { name: item.name },
-        data: { imageUrl: item.imageUrl },
-      });
-    }
   }
 
   console.log(`Seeded store "${store.name}" with ${MENU_ITEMS.length} menu items.`);

@@ -55,7 +55,7 @@
 구매자는 메뉴를 보기 전에 먼저 `/stores`에서 매장을 지도로 찾습니다 (`src/components/store-locator.tsx`, `src/components/stores-map.tsx`).
 
 - **위치 확인**: 화면에 진입할 때마다 브라우저 GPS 권한을 요청합니다. Node 21+가 자체 `navigator` 전역 객체(`.geolocation` 없음)를 갖고 있어서, 지원 여부를 초기 렌더에서 바로 계산하면 서버/클라이언트 첫 렌더 결과가 달라져 하이드레이션이 깨지는 문제가 있었습니다 — 그래서 초기 상태는 항상 `"requesting"`으로 고정하고, 실제 지원 여부 판단은 클라이언트 전용 `useEffect` 안에서만 하도록 했습니다. 권한을 거부하거나 위치를 가져오지 못해도 화면을 막지 않고, 기본 위치(서울시청 좌표, `src/lib/constants.ts`의 `FALLBACK_LOCATION`)로 조용히 대체합니다.
-- **반경 검색**: 얻은 좌표 기준 반경 3km 이내 매장을 haversine 공식으로 계산해 보여줍니다 (`src/lib/stores/geo.ts`, `getNearbyStores`). 로컬 개발 환경(`NODE_ENV === "development"`)에서 반경 내 매장이 하나도 없으면, 기존 매장의 메뉴를 그대로 복제한 지점을 반경 내 임의 위치에 자동으로 만들어서 지도 테스트가 항상 가능하도록 했습니다 (`src/lib/stores/seed-nearby.ts`). 지점명은 `PROJECT_NAME` 상수(`orderflow`)를 기반으로 만들어 브랜드명을 한 곳에서 바꿀 수 있습니다.
+- **반경 검색**: 얻은 좌표 기준 반경 3km 이내 매장을 haversine 공식으로 계산해 보여줍니다 (`src/lib/stores/geo.ts`, `getNearbyStores`).
 - **지도**: Leaflet 기반, 사용자 위치(파란 점) + 반경 원 + 매장 마커를 함께 표시합니다. 마커를 클릭하면 팝업에 매장명·전화번호·"주문하기" 버튼이 뜨고, 팝업이 열릴 때 지도가 자동으로 팬(pan)되어 **말풍선 자체**가 화면 중앙에 오도록 맞춥니다 — 마커만 중앙에 두면 마커 위로 뜨는 팝업이 화면 위쪽에 걸려 아래가 비어 보이는 문제가 있어서, 팝업이 열린 직후 실제 렌더링된 팝업과 뷰포트 중앙의 화면 좌표 차이를 실측해 그만큼만 보정합니다. 전화번호를 클릭하면 클립보드로 복사됩니다.
 - **매장 목록**: 지도 하단에 반경 내 매장을 거리순으로 스크롤 가능한 목록으로도 보여줍니다. 각 항목의 이동 아이콘을 누르면 해당 매장의 마커를 클릭한 것과 동일하게 동작합니다(같은 popupopen 핸들러를 그대로 재사용).
 - 매장을 선택해 "주문하기"를 누르면 `/menu?storeId=<선택한 매장>`으로 이동해 해당 매장의 메뉴만 보여줍니다 (`getMenu(storeId)`). `storeId` 없이 `/menu`에 진입하면(네비게이션 등) `getPrimaryStore()`가 최초 시드 매장으로 대체합니다 — 주문 완료 후 확인 페이지(`/confirmation/[orderId]`)의 "메뉴로 돌아가기" 링크도 방금 주문한 매장의 `storeId`를 그대로 붙여 이동합니다(`Order.storeId`를 `getOrder`/`createOrder` 반환값에 포함, `src/lib/orders/queries.ts`·`actions.ts`). 이전엔 이 링크가 `storeId` 없이 `/menu`로만 이동해, 방금 주문한 지점이 아니라 최초 시드 매장("OrderFlow Pizza")으로 조용히 튕기는 문제가 있었습니다.
@@ -81,7 +81,7 @@
 
 **피자 카드 + 상세보기 모달**: 피자 카테고리는 다른 카테고리와 달리 왼쪽에 작은 정사각형 썸네일, 오른쪽에 이름·짧은 설명·"자세히 보기" 버튼을 두는 가로형 카드이고 (`src/components/pizza-menu-card.tsx`), 재료 목록·사이즈 선택·실시간 가격·장바구니 담기는 모달로 분리했습니다 (`src/components/pizza-detail-modal.tsx`). 사진이 작아진 상태에선 기존 세로 스택(사진 위, 텍스트 아래)보다 리스트형 배달앱에 익숙한 가로 배치가 공간 활용이 낫고, 카드 전체 높이도 사이드/음료 카드와 더 비슷해집니다. 재료 목록은 `description` 필드(예: "토마토 소스, 모차렐라, 바질")를 콤마로 파싱해 만들어서 별도 스키마 필드 없이 성분표처럼 보여줍니다. 치킨/사이드/음료는 사이즈를 구분할 실익이 적어 기존처럼 카드에서 바로 담는 방식(`src/components/pizza-card.tsx`)을 유지하고, 항상 M 사이즈 가격으로 고정했습니다.
 
-메뉴 사진은 `MenuItem.imageUrl`(nullable) 컬럼에 저장되고, 없으면 손으로 그린 `PizzaIcon`(`src/components/icons.tsx`)으로 대체됩니다. 로컬 개발용 매장 복제(`generateNearbyStores`, 위 "매장 찾기" 참고)도 이름이 같은 메뉴를 그대로 베끼는 구조라 `imageUrl`을 함께 복사하도록 했고, 기존에 이미 생성돼 있던 복제 매장들은 `prisma/seed.ts`의 `updateMany` 백필 루프로 한 번에 채웠습니다.
+메뉴 사진은 `MenuItem.imageUrl`(nullable) 컬럼에 저장되고, 없으면 손으로 그린 `PizzaIcon`(`src/components/icons.tsx`)으로 대체됩니다.
 
 사진 원본마다 노출·채도가 제각각이라 얇은 반투명 검정 오버레이(`bg-black/15`)를 깔아 톤을 통일했습니다. 카드 썸네일과 모달 히어로 이미지는 `PizzaPhoto` 컴포넌트(`src/components/pizza-photo.tsx`)로 공통화했고, `lightbox` prop으로 클릭 시 원본을 오버레이 없이 크게 보는 라이트박스 사용 여부를 제어합니다 — 목록의 작은 썸네일은 그냥 훑어보기용이라 꺼두고(클릭 무반응), "자세히 보기" 상세 모달의 큰 사진에서만 켜뒀습니다. 라이트박스가 켜진 사진 영역은 hover 시 커서가 돋보기(`cursor: zoom-in`) 모양으로 바뀌어 클릭하면 확대된다는 걸 미리 알려줍니다 — 우측 상단 닫기 버튼은 별도 요소라 이 영역에서 제외됩니다. Tailwind v4의 전역 `button { cursor: pointer }` 규칙(아래 "클릭 가능 요소 커서" 참고)보다 구체적인 커서를 보여줘야 해서 `!cursor-zoom-in`으로 우선순위를 높였습니다.
 

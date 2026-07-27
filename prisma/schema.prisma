@@ -98,7 +98,7 @@ model Cart {
 
 model Store {
   id           String      @id @default(uuid())
-  ownerId      String
+  ownerId      String      @unique
   owner        User        @relation(fields: [ownerId], references: [id])
   name         String
   description  String?
@@ -111,8 +111,6 @@ model Store {
 
   menuItems MenuItem[]
   orders    Order[]
-
-  @@index([ownerId])
 }
 
 model MenuItem {
