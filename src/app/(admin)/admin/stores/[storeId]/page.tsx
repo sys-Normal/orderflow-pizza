@@ -9,6 +9,7 @@ import { StoreStatusDropdown } from "@/components/store-status-dropdown";
 import { StoreLocation } from "@/components/store-location";
 import { PhoneContact } from "@/components/phone-contact";
 import { StoreOrdersButton } from "@/components/store-orders-modal";
+import { ResetSellerPasswordButton } from "@/components/reset-seller-password-button";
 
 export default async function AdminStoreDetailPage({
   params,
@@ -72,6 +73,18 @@ export default async function AdminStoreDetailPage({
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             이메일: {store.contactEmail}
           </p>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          계정 정보
+        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-black/[.08] bg-surface p-4 dark:border-white/[.145]">
+          <p className="text-sm">
+            로그인 이메일: <span className="font-mono">{store.owner.email}</span>
+          </p>
+          <ResetSellerPasswordButton storeId={store.id} />
         </div>
       </section>
 

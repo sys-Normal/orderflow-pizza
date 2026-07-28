@@ -9,7 +9,10 @@ export async function getAllStoresWithOwner() {
 }
 
 export async function getStoreById(id: string) {
-  return prisma.store.findUnique({ where: { id } });
+  return prisma.store.findUnique({
+    where: { id },
+    include: { owner: { select: { email: true } } },
+  });
 }
 
 export async function getStoreByOwnerId(ownerId: string) {

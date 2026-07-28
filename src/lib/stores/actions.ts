@@ -104,3 +104,33 @@ export async function createStoreAction(
   revalidatePath("/admin/stores");
   return { success: true, loginEmail, tempPassword, storeName: name };
 }
+
+// Admin-mediated password reset — the exception path for when a seller can't
+// use the self-service "비밀번호를 잊으셨나요?" email flow (no inbox access,
+// needs to regain access immediately, etc). Same one-time-temp-password
+// pattern as account creation above, not stored anywhere in plaintext.
+export async function resetSellerPasswordAction(storeId: string): Promise<string> {
+  const session = await getSessionUser();
+  if (!session || session.role !== "platform_admin") {
+    throw new Error("플랫폼 관리자만 비밀번호를 초기화할 수 있습니다.");
+  }
+
+  const store = await prisma.store.findUnique({ where: { id: storeId } });
+  if (!store) {
+    throw new Error("매장을 찾을 수 없습니다.");
+  }
+
+  const tempPassword = generateTempPassword();
+  await prisma.user.update({
+    where: { id: store.ownerId },
+    data: { passwordHash: hashPassword(tempPassword) },
+  });
+  // Any outstanding self-service reset links for this account should stop
+  // working once an admin has issued a fresh temp password.
+  await prisma.passwordResetToken.updateMany({
+    where: { userId: store.ownerId, usedAt: null },
+    data: { usedAt: new Date() },
+  });
+
+  return tempPassword;
+}

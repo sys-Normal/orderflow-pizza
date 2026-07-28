@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { loginAction } from "@/lib/auth/actions";
 
 export function LoginForm() {
@@ -44,6 +45,12 @@ export function LoginForm() {
       >
         {pending ? "로그인 중..." : "로그인"}
       </button>
+      <Link
+        href="/admin/forgot-password"
+        className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+      >
+        비밀번호를 잊으셨나요?
+      </Link>
     </form>
   );
 }

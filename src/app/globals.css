@@ -136,6 +136,39 @@ summary {
   }
 }
 
+/* Small vertical tremor on a validation error message (e.g. password
+   mismatch) so a re-submitted, textually-identical error still visibly
+   registers as "this just happened" instead of looking like a no-op.
+   Same re-trigger convention as .price-pulse above: remount via React
+   `key` on every new error, since CSS animations don't replay on their
+   own when only surrounding state changes. */
+@keyframes shake-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  20% {
+    transform: translateY(-2px);
+  }
+  40% {
+    transform: translateY(2px);
+  }
+  60% {
+    transform: translateY(-1px);
+  }
+  80% {
+    transform: translateY(1px);
+  }
+}
+.shake-y {
+  animation: shake-y 300ms ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .shake-y {
+    animation: none;
+  }
+}
+
 /* Leaflet marker popups ("말풍선") default to a plain white bubble with its
    own font stack, which clashes with the app's card styling and dark mode.
    Re-skin them to match (surface color, border, radius, font) instead.

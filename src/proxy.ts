@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionValue } from "@/lib/auth/session";
+import { ADMIN_PUBLIC_PATHS } from "@/lib/auth/admin-public-paths";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/admin")) {
-    if (pathname === "/admin/login") {
+    if (ADMIN_PUBLIC_PATHS.includes(pathname)) {
       return NextResponse.next();
     }
 

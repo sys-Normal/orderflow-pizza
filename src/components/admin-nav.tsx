@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Pizza } from "lucide-react";
 import { logoutAction } from "@/lib/auth/actions";
 import type { SessionRole } from "@/lib/auth/session";
+import { ADMIN_PUBLIC_PATHS } from "@/lib/auth/admin-public-paths";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -25,7 +26,7 @@ export function AdminNav({
   hasApprovedStore?: boolean;
 }) {
   const pathname = usePathname();
-  const isLoginPage = pathname === "/admin/login";
+  const isAuthPage = ADMIN_PUBLIC_PATHS.includes(pathname);
 
   return (
     <header className="border-b border-black/[.08] dark:border-white/[.145]">
@@ -45,7 +46,7 @@ export function AdminNav({
           )}
         </Link>
         <nav className="flex items-center gap-4 text-sm font-medium">
-          {!isLoginPage &&
+          {!isAuthPage &&
             (role === "platform_admin" ? (
               <>
                 <Link href="/admin/stores">매장 관리</Link>
@@ -57,7 +58,7 @@ export function AdminNav({
               </Link>
             ))}
           <ThemeToggle />
-          {!isLoginPage && (
+          {!isAuthPage && (
             <form action={logoutAction}>
               <button type="submit">로그아웃</button>
             </form>

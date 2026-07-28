@@ -1,4 +1,10 @@
-import { randomBytes, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
+import {
+  createHash,
+  randomBytes,
+  randomInt,
+  scryptSync,
+  timingSafeEqual,
+} from "node:crypto";
 
 const KEY_LENGTH = 64;
 
@@ -31,4 +37,16 @@ export function verifyPassword(password: string, storedHash: string): boolean {
   return (
     derivedKey.length === hashBuffer.length && timingSafeEqual(derivedKey, hashBuffer)
   );
+}
+
+// "비밀번호를 잊으셨나요?" reset tokens — unlike a user-chosen password these
+// are already high-entropy random values, so a fast SHA-256 digest (rather
+// than scrypt) is enough; only the digest is stored, the raw token only ever
+// exists in the emailed link.
+export function generateResetToken(): string {
+  return randomBytes(32).toString("base64url");
+}
+
+export function hashResetToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
 }

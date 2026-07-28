@@ -64,10 +64,27 @@ model User {
   recentAddressPhone  String?
   recentAddressLine   String?
 
-  store           Store?
-  orders          Order[]
-  cart            Cart?
-  deliveryPresets DeliveryPreset[]
+  store               Store?
+  orders              Order[]
+  cart                Cart?
+  deliveryPresets     DeliveryPreset[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+// Self-service "비밀번호를 잊으셨나요?" flow (admin/seller login only — see
+// src/lib/auth/reset-actions.ts). `tokenHash` stores a SHA-256 digest of the
+// random token emailed to the user, never the raw token itself, so a DB leak
+// alone can't be used to reset someone's password.
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 // Named delivery addresses (e.g. "집", "회사") a buyer can save and reuse at
