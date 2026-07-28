@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { generateResetToken, hashPassword, hashResetToken } from "@/lib/auth/password";
+import { getValidResetToken } from "@/lib/auth/reset-token";
 import { sendEmail } from "@/lib/email/resend";
 
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1시간
@@ -76,10 +77,8 @@ export async function resetPasswordAction(
     return { error: "비밀번호가 일치하지 않습니다.", nonce: Date.now() };
   }
 
-  const resetToken = await prisma.passwordResetToken.findUnique({
-    where: { tokenHash: hashResetToken(token) },
-  });
-  if (!resetToken || resetToken.usedAt || resetToken.expiresAt < new Date()) {
+  const resetToken = await getValidResetToken(token);
+  if (!resetToken) {
     return {
       error: "유효하지 않거나 만료된 링크입니다. 다시 요청해주세요.",
       nonce: Date.now(),

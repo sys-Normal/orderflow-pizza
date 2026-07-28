@@ -40,6 +40,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           value={password}
           onChange={setPassword}
         />
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">8자 이상 입력해주세요.</p>
       </div>
       <div className="flex flex-col gap-1">
         <label htmlFor="confirmPassword" className="text-sm font-medium">

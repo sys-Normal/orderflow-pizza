@@ -37,6 +37,7 @@ export function BuyerSignupForm({ next }: { next: string }) {
             autoComplete="new-password"
             className="rounded border border-black/[.08] bg-transparent px-3 py-2 dark:border-white/[.145]"
           />
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">8자 이상 입력해주세요.</p>
         </div>
         <div className="flex flex-col gap-1">
           <label htmlFor="confirmPassword" className="text-sm font-medium">
