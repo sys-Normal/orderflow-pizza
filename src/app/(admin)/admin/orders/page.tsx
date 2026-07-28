@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/current-user";
 import { getOrdersForSession } from "@/lib/orders/queries";
+import { getStoreByOwnerId } from "@/lib/stores/queries";
 import { LiveOrderFeed } from "@/components/live-order-feed";
 
 export default async function AdminOrdersPage() {
@@ -9,6 +10,9 @@ export default async function AdminOrdersPage() {
   // Platform admins don't get a flat cross-store feed anymore — they browse
   // orders per store from the store list, or use /admin/orders/search.
   if (session.role === "platform_admin") redirect("/admin/stores");
+
+  const store = await getStoreByOwnerId(session.userId);
+  if (store?.status !== "approved") redirect("/admin/stores/status");
 
   const orders = await getOrdersForSession(session);
 

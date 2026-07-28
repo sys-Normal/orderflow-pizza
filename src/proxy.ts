@@ -18,7 +18,14 @@ export function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
 
-    if (pathname.startsWith("/admin/stores") && session.role !== "platform_admin") {
+    // /admin/stores/status is a seller's own read-only store-status screen
+    // (pending/suspended/rejected messaging), not part of the platform-admin
+    // store list — exempt it from the platform_admin-only restriction below.
+    if (
+      pathname.startsWith("/admin/stores") &&
+      pathname !== "/admin/stores/status" &&
+      session.role !== "platform_admin"
+    ) {
       return NextResponse.redirect(new URL("/admin/orders", request.url));
     }
 

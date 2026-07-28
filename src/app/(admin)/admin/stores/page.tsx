@@ -21,7 +21,15 @@ export default async function AdminStoresPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">매장 관리</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-semibold tracking-tight">매장 관리</h1>
+        <Link
+          href="/admin/stores/new"
+          className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          + 새 지점
+        </Link>
+      </div>
 
       <ul className="flex flex-col gap-4">
         {stores.map((store, index) => (

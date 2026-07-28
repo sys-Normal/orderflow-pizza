@@ -17,7 +17,13 @@ const ROLE_BADGE_CLASS: Record<string, string> = {
   seller: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300",
 };
 
-export function AdminNav({ role }: { role?: SessionRole }) {
+export function AdminNav({
+  role,
+  hasApprovedStore,
+}: {
+  role?: SessionRole;
+  hasApprovedStore?: boolean;
+}) {
   const pathname = usePathname();
   const isLoginPage = pathname === "/admin/login";
 
@@ -46,7 +52,9 @@ export function AdminNav({ role }: { role?: SessionRole }) {
                 <Link href="/admin/orders/search">주문 검색</Link>
               </>
             ) : (
-              <Link href="/admin/orders">주문 목록</Link>
+              <Link href={hasApprovedStore ? "/admin/orders" : "/admin/stores/status"}>
+                {hasApprovedStore ? "주문 목록" : "매장 상태"}
+              </Link>
             ))}
           <ThemeToggle />
           {!isLoginPage && (

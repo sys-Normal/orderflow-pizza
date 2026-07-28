@@ -64,7 +64,7 @@ model User {
   recentAddressPhone  String?
   recentAddressLine   String?
 
-  stores          Store[]
+  store           Store?
   orders          Order[]
   cart            Cart?
   deliveryPresets DeliveryPreset[]

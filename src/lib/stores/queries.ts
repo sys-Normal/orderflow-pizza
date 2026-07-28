@@ -12,6 +12,10 @@ export async function getStoreById(id: string) {
   return prisma.store.findUnique({ where: { id } });
 }
 
+export async function getStoreByOwnerId(ownerId: string) {
+  return prisma.store.findUnique({ where: { ownerId } });
+}
+
 // No store-selection UI yet, so the customer-facing menu page shows the
 // single seeded store. Revisit once multi-store checkout exists.
 export async function getPrimaryStore() {
